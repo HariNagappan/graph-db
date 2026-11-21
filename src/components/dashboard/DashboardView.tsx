@@ -1,8 +1,7 @@
 "use client";
 
 import {useEffect, useState} from "react";
-import Link from "next/link";
-import {ArrowRight, Compass, Inbox, Users} from "lucide-react";
+import {Compass, Inbox} from "lucide-react";
 import {useNetwork} from "@/components/network/NetworkProvider";
 import type {PeopleSort} from "@/components/people/helpers";
 import {firstName, plural, sortPeople, suggestedPeople} from "@/components/people/helpers";
@@ -36,12 +35,11 @@ export default function DashboardView() {
     const capped =
         counts.first > RING_CAP || counts.second > RING_CAP || counts.third > RING_CAP;
 
-    const sections: {key: string; title: string; hint: string; href: string; tone: string; sort: PeopleSort}[] = [
+    const sections: {key: string; title: string; hint: string; tone: string; sort: PeopleSort}[] = [
         {
             key: "first",
             title: "1st degree",
             hint: "People you know directly",
-            href: "/network?degree=1",
             tone: "k1",
             sort: "name",
         },
@@ -49,7 +47,6 @@ export default function DashboardView() {
             key: "second",
             title: "2nd degree",
             hint: "One step beyond your connections",
-            href: "/network?degree=2",
             tone: "k2",
             sort: "mutual",
         },
@@ -57,7 +54,6 @@ export default function DashboardView() {
             key: "third",
             title: "3rd degree",
             hint: "Two steps beyond your connections",
-            href: "/network?degree=3",
             tone: "k3",
             sort: "mutual",
         },
@@ -81,14 +77,6 @@ export default function DashboardView() {
                         {plural(counts.second + counts.third, "person", "people")} more sit one or two steps out.
                     </p>
                 </div>
-                <div className="gn-page-head-actions">
-                    <Link className="gn-btn gn-btn-secondary" href="/network">
-                        <Users size={15}/>My network
-                    </Link>
-                    <Link className="gn-btn gn-btn-primary" href="/discover">
-                        <Compass size={15}/>Find people
-                    </Link>
-                </div>
             </div>
 
             <div className="gn-stats">
@@ -109,11 +97,6 @@ export default function DashboardView() {
                         <span className="gn-card-meta">
                             {counts.inside} of {counts.total} inside 3 steps
                         </span>
-                        <span className="gn-card-act">
-                            <Link className="gn-btn gn-btn-ghost gn-btn-xs" href="/network">
-                                Open<ArrowRight size={12}/>
-                            </Link>
-                        </span>
                     </div>
                     <div className="gn-card-b flush">
                         <div className="gn-map-body">
@@ -122,7 +105,6 @@ export default function DashboardView() {
                                     {k: "k1", label: "1st degree", hint: "direct", value: counts.first},
                                     {k: "k2", label: "2nd degree", hint: "one step out", value: counts.second},
                                     {k: "k3", label: "3rd degree", hint: "two steps out", value: counts.third},
-                                    {k: "k0", label: "Outside", hint: "no path in 3", value: counts.outside},
                                 ].map((row) => (
                                     <div className="lg-row" key={row.label}>
                                         <span className="gn-orbit-key"><i className={row.k}/></span>
@@ -151,9 +133,6 @@ export default function DashboardView() {
                         <div className="gn-card-h">
                             <span className="gn-card-title">Requests</span>
                             <span className="gn-card-meta">{counts.received} waiting</span>
-                            <span className="gn-card-act">
-                                <Link className="gn-btn gn-btn-ghost gn-btn-xs" href="/requests">View all</Link>
-                            </span>
                         </div>
                         {received.length > 0 ? (
                             received.slice(0, 3).map((p) => <PersonRow key={p.id} person={p}/>)
@@ -170,9 +149,6 @@ export default function DashboardView() {
                                 <span className="gn-num" style={{color: "var(--g-text-2)"}}>{counts.sent}</span>{" "}
                                 sent · awaiting response
                             </span>
-                            <Link className="gn-btn gn-btn-ghost gn-btn-xs" style={{marginLeft: "auto"}} href="/requests">
-                                View sent<ArrowRight size={12}/>
-                            </Link>
                         </div>
                     </section>
                 </div>
@@ -181,29 +157,10 @@ export default function DashboardView() {
             <div className="gn-section-head">
                 <h2 className="gn-h2">People you may know</h2>
                 <span className="gn-hint-inline">Ranked by mutual connections</span>
-                <Link className="gn-btn gn-btn-ghost gn-btn-sm" href="/discover">
-                    See all<ArrowRight size={13}/>
-                </Link>
             </div>
             {suggestions.length > 0 ? (
                 <div className="gn-people">
                     {suggestions.map((p) => <PersonCard key={p.id} person={p}/>)}
-                    {suggestions.length < 3 && (
-                        <Link className="gn-person gn-person-cta" href="/discover" aria-label="Find more people">
-                            <div className="gn-person-top">
-                                <span className="gn-empty-ico"><Compass size={20}/></span>
-                                <div className="gn-person-id">
-                                    <span className="gn-person-name">Find more people</span>
-                                    <div className="gn-person-meta">Search the whole network by name</div>
-                                </div>
-                            </div>
-                            <div className="gn-person-b">
-                                <span className="gn-btn gn-btn-ghost gn-btn-xs">
-                                    Browse everyone<ArrowRight size={12}/>
-                                </span>
-                            </div>
-                        </Link>
-                    )}
                 </div>
             ) : (
                 <div className="gn-card">
@@ -211,7 +168,6 @@ export default function DashboardView() {
                         icon={<Compass size={20}/>}
                         title="No suggestions right now"
                         description="When people two or three steps away share a connection with you, they will appear here."
-                        action={<Link className="gn-btn gn-btn-secondary gn-btn-sm" href="/discover">Browse everyone</Link>}
                     />
                 </div>
             )}
@@ -219,9 +175,6 @@ export default function DashboardView() {
             <div className="gn-section-head">
                 <h2 className="gn-h2">Your network by degree</h2>
                 <span className="gn-hint-inline">Every distance, computed per person in Neo4j</span>
-                <Link className="gn-btn gn-btn-ghost gn-btn-sm" href="/network">
-                    Open my network<ArrowRight size={13}/>
-                </Link>
             </div>
 
             <div className="gn-degree-grid">
@@ -247,10 +200,6 @@ export default function DashboardView() {
                             </div>
                             <div className="gn-card-f">
                                 <span className="gn-tiny gn-dim">{section.hint}</span>
-                                <Link className="gn-btn gn-btn-ghost gn-btn-xs" href={section.href}>
-                                    {list.length > 0 ? "View all" : "Find people"}
-                                    <ArrowRight size={12}/>
-                                </Link>
                             </div>
                         </section>
                     );

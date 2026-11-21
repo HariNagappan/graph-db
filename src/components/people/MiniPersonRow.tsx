@@ -2,7 +2,7 @@ import Link from "next/link";
 import {ChevronRight} from "lucide-react";
 import type {Person} from "@/components/people/types";
 import {metaLine} from "@/components/people/helpers";
-import {AvatarRing, DegreeBadge} from "@/components/UI/Avatar";
+import {AvatarRing, DegreeDot} from "@/components/UI/Avatar";
 
 /** A compact, clickable row used inside the dashboard's degree columns. */
 export default function MiniPersonRow({person}: {person: Person}) {
@@ -21,7 +21,7 @@ export default function MiniPersonRow({person}: {person: Person}) {
             <span className="gn-mini-txt">
                 <span className="gn-mini-name">
                     {person.name}
-                    <DegreeBadge status={person.status} degree={person.degree}/>
+                    <DegreeDot status={person.status} degree={person.degree}/>
                 </span>
                 <span className="gn-mini-sub">{metaLine(person)}</span>
             </span>

@@ -20,7 +20,6 @@ type Counts = {
     first: number;
     second: number;
     third: number;
-    outside: number;
     inside: number;
     received: number;
     sent: number;
@@ -53,7 +52,7 @@ function applyLocal(p: Person, action: ConnectionAction): Person {
     }
 }
 
-const EMPTY_BUCKETS: DegreeBuckets = {all: [], first: [], second: [], third: [], outside: []};
+const EMPTY_BUCKETS: DegreeBuckets = {all: [], first: [], second: [], third: []};
 
 export function NetworkProvider({children}: {children: React.ReactNode}) {
     const {data: session} = useSession();
@@ -145,7 +144,6 @@ export function NetworkProvider({children}: {children: React.ReactNode}) {
         first: buckets.first.length,
         second: buckets.second.length,
         third: buckets.third.length,
-        outside: buckets.outside.length,
         inside: buckets.first.length + buckets.second.length + buckets.third.length,
         received: people?.filter((p) => p.status === "received").length ?? 0,
         sent: people?.filter((p) => p.status === "sent").length ?? 0,

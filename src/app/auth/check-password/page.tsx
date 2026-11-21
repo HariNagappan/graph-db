@@ -90,10 +90,6 @@ export default function CheckPasswordPage() {
                     {loading ? <><Loader2 size={16} className="gn-spin"/>Signing in…</> : "Sign in"}
                 </button>
             </form>
-
-            <p className="gn-auth-foot">
-                Passwords are stored only as bcrypt hashes in the SQLite account table.
-            </p>
         </AuthFormWrapper>
     );
 }

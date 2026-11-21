@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import {ArrowRight, Compass, Inbox, Shield} from "lucide-react";
+import {ArrowRight, Inbox, Shield} from "lucide-react";
 import {useNetwork} from "@/components/network/NetworkProvider";
 import {plural} from "@/components/people/helpers";
-import {AvatarRing, DegreeBadge} from "@/components/UI/Avatar";
+import {AvatarRing, DegreeDot} from "@/components/UI/Avatar";
 import ConnectionActions from "@/components/people/ConnectionActions";
 import {EmptyState, ErrorState, PageLoading} from "@/components/UI/States";
 
@@ -27,11 +27,6 @@ export default function RequestsView() {
                         {counts.received} waiting for your answer, {counts.sent} sent by you.
                     </p>
                 </div>
-                <div className="gn-page-head-actions">
-                    <Link className="gn-btn gn-btn-primary" href="/discover">
-                        <Compass size={15}/>Find people
-                    </Link>
-                </div>
             </div>
 
             <div className="gn-2col gn-2col-requests">
@@ -53,7 +48,7 @@ export default function RequestsView() {
                                     <Link href={`/connections?user_id=${encodeURIComponent(p.id)}`}>
                                         {p.name}
                                     </Link>
-                                    <DegreeBadge status={p.status} degree={p.degree}/>
+                                    <DegreeDot status={p.status} degree={p.degree}/>
                                 </div>
                                 <div className="gn-row-sub">
                                     {p.mutual > 0
@@ -71,7 +66,6 @@ export default function RequestsView() {
                             icon={<Inbox size={20}/>}
                             title="No invitations to review"
                             description="When someone asks to connect, their request lands here."
-                            action={<Link className="gn-btn gn-btn-primary gn-btn-sm" href="/discover">Find people</Link>}
                         />
                     )}
                 </section>
@@ -119,9 +113,9 @@ export default function RequestsView() {
                             <div className="gn-flow-steps">
                                 <span className="gn-deg gn-deg-0">Sent</span>
                                 <ArrowRight size={12} className="gn-dim"/>
-                                <span className="gn-deg gn-deg-2">Accepted</span>
+                                <span className="gn-deg gn-deg-self">Accepted</span>
                                 <ArrowRight size={12} className="gn-dim"/>
-                                <span className="gn-deg gn-deg-1">Connected</span>
+                                <span className="gn-deg is-ok">Connected</span>
                             </div>
                             <p className="gn-help-note">
                                 Accepting adds a <span className="gn-mono">CONNECTED</span> edge in the graph.

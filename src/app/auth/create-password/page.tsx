@@ -119,10 +119,6 @@ export default function CreatePasswordPage() {
                     Continue
                 </button>
             </form>
-
-            <p className="gn-auth-foot">
-                Passwords are hashed with bcrypt and stored in SQLite only.
-            </p>
         </AuthFormWrapper>
     );
 }

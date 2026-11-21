@@ -1,5 +1,4 @@
 import Link from "next/link";
-import {Database, GitBranch} from "lucide-react";
 import BrandMark from "@/components/UI/BrandMark";
 import Constellation from "@/components/Auth/Constellation";
 
@@ -23,15 +22,7 @@ export default function AuthFormWrapper({
                 </div>
 
                 <div className="gn-auth-claim">
-                    <h2>Your network is not a list. It has a shape.</h2>
-                    <p>
-                        GraphNet maps who you know, who they know, and how far apart you really are.
-                        Every connection is an edge you can see.
-                    </p>
-                    <div className="gn-auth-proof">
-                        <span className="gn-pf"><GitBranch size={13}/>Three degrees, mapped</span>
-                        <span className="gn-pf"><Database size={13}/>Neo4j graph core</span>
-                    </div>
+                    <h2>Your network has a shape.</h2>
                 </div>
             </div>
 

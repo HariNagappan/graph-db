@@ -1,13 +1,12 @@
 "use client";
 
 import {useCallback, useEffect, useState} from "react";
-import Link from "next/link";
 import {useRouter, useSearchParams} from "next/navigation";
-import {ArrowLeft, Compass, Lock, Users} from "lucide-react";
+import {Lock} from "lucide-react";
 import {useNetwork} from "@/components/network/NetworkProvider";
 import type {ProfileData} from "@/components/people/types";
 import {degreePhrase, firstName, plural} from "@/components/people/helpers";
-import {AvatarRing, DegreeBadge} from "@/components/UI/Avatar";
+import {AvatarRing, DegreeDot} from "@/components/UI/Avatar";
 import ConnectionActions from "@/components/people/ConnectionActions";
 import PersonRow from "@/components/people/PersonRow";
 import {EmptyState, ErrorState} from "@/components/UI/States";
@@ -61,16 +60,9 @@ export default function ProfileView() {
         void load();
     }, [load]);
 
-    const back = (
-        <Link className="gn-btn gn-btn-ghost gn-btn-sm gn-backlink" href="/network">
-            <ArrowLeft size={14}/>Back to my network
-        </Link>
-    );
-
     if (!id && !networkLoading) {
         return (
             <div>
-                {back}
                 <ErrorState
                     title="No profile selected"
                     message="Open a person from your network or from discovery to view their profile."
@@ -83,7 +75,6 @@ export default function ProfileView() {
         if (error) {
             return (
                 <div>
-                    {back}
                     <ErrorState
                         title="Profile unavailable"
                         message={error}
@@ -94,7 +85,6 @@ export default function ProfileView() {
         }
         return (
             <div>
-                {back}
                 <div className="gn-skeleton-page" role="status" aria-live="polite">
                     <span className="gn-sr">Loading profile…</span>
                     <div className="gn-skel" style={{height: 168, borderRadius: 14}}/>
@@ -121,15 +111,13 @@ export default function ProfileView() {
         : person.status === "connected"
             ? `1st degree connection · ${person.mutual > 0 ? plural(person.mutual, "mutual connection") : "no mutual connections"}`
             : person.degree === null
-                ? "No path to you within three steps."
+                ? "Not in your network yet."
                 : `${degreePhrase(person.degree)} · ${person.mutual > 0 ? plural(person.mutual, "mutual connection") : "no mutual connections"}`;
 
     const connectionTitle = isSelf ? "Your connections" : `${firstName(person.name)}’s connections`;
 
     return (
         <div>
-            {back}
-
             <div className="gn-card gn-profile-hero">
                 <div className="gn-profile-hero-main">
                     <AvatarRing
@@ -141,21 +129,14 @@ export default function ProfileView() {
                     <div className="gn-profile-id">
                         <div className="gn-flex gn-ic gn-gap-10 gn-flex-wrap">
                             <h1 className="gn-h1" style={{fontSize: 26}}>{person.name}</h1>
-                            <DegreeBadge status={person.status} degree={person.degree}/>
+                            <DegreeDot status={person.status} degree={person.degree}/>
                         </div>
                         <div className="gn-profile-meta">{meta}</div>
-                        <div className="gn-profile-actions">
-                            {isSelf ? (
-                                <Link className="gn-btn gn-btn-secondary gn-btn-sm" href="/network">
-                                    <Users size={14}/>My connections
-                                </Link>
-                            ) : (
+                        {!isSelf && (
+                            <div className="gn-profile-actions">
                                 <ConnectionActions person={person} onChanged={() => void load()} size="sm"/>
-                            )}
-                            <Link className="gn-btn gn-btn-ghost gn-btn-sm" href="/discover">
-                                <Compass size={14}/>Discover people
-                            </Link>
-                        </div>
+                            </div>
+                        )}
                     </div>
                     <div className="gn-profile-stats">
                         <div>
@@ -170,7 +151,7 @@ export default function ProfileView() {
                 </div>
                 <div className="gn-profile-note">
                     {isSelf
-                        ? "Your degree rings, mutuals and connection lists are computed per pair in Neo4j."
+                        ? "Your degree colours, mutuals and connection lists are computed per pair in Neo4j."
                         : "GraphNet shows a full connection list only for you and your 1st degree connections."}
                 </div>
             </div>
@@ -233,7 +214,7 @@ export default function ProfileView() {
                                 {!isSelf && (
                                     <div className="gn-kv">
                                         <dt>Distance to {firstName(person.name)}</dt>
-                                        <dd>{degree === null ? "outside" : `${degree} ${degree === 1 ? "hop" : "hops"}`}</dd>
+                                        <dd>{degree === null ? "not connected" : `${degree} ${degree === 1 ? "hop" : "hops"}`}</dd>
                                     </div>
                                 )}
                             </dl>

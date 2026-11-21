@@ -3,7 +3,7 @@
 import {useEffect, useRef, useState} from "react";
 import Link from "next/link";
 import {useSession, signOut} from "next-auth/react";
-import {ChevronDown, LogOut, User, Users} from "lucide-react";
+import {ChevronDown, LogOut, User} from "lucide-react";
 import {AvatarRing} from "@/components/UI/Avatar";
 
 export default function UserMenu() {
@@ -58,9 +58,6 @@ export default function UserMenu() {
                     </div>
                     <Link className="gn-menu-item" href={href} role="menuitem" onClick={() => setOpen(false)}>
                         <User size={15}/>My profile
-                    </Link>
-                    <Link className="gn-menu-item" href="/network" role="menuitem" onClick={() => setOpen(false)}>
-                        <Users size={15}/>My connections
                     </Link>
                     <div className="gn-menu-sep"/>
                     <button

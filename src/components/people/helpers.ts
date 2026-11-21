@@ -35,13 +35,8 @@ export function displayDegree(p: Person): number | null {
     return p.degree;
 }
 
-export function degreeLabel(degree: number | null): string {
-    if (degree === null) return "Outside";
-    return ["You", "1st", "2nd", "3rd"][degree] ?? "Outside";
-}
-
 export function degreePhrase(degree: number | null): string {
-    if (degree === null) return "no path within three steps";
+    if (degree === null) return "not in your network yet";
     if (degree === 0) return "you";
     return `${degree}${degree === 1 ? "st" : degree === 2 ? "nd" : "rd"} degree connection`;
 }
@@ -50,7 +45,7 @@ export function metaLine(p: Person): string {
     if (p.status === "self") return "This is you";
     if (p.status === "received") return "Wants to connect with you";
     if (p.mutual > 0) return plural(p.mutual, "mutual connection");
-    if (p.degree === null) return "No path within 3 steps";
+    if (p.degree === null) return "Not in your network yet";
     if (p.status === "connected") return "1st degree connection";
     return "No mutual connections";
 }
@@ -77,7 +72,6 @@ export type DegreeBuckets = {
     first: Person[];
     second: Person[];
     third: Person[];
-    outside: Person[];
 };
 
 export function byDegree(people: Person[]): DegreeBuckets {
@@ -86,7 +80,6 @@ export function byDegree(people: Person[]): DegreeBuckets {
         first: people.filter((p) => displayDegree(p) === 1),
         second: people.filter((p) => displayDegree(p) === 2),
         third: people.filter((p) => displayDegree(p) === 3),
-        outside: people.filter((p) => displayDegree(p) === null),
     };
 }
 

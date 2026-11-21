@@ -2,7 +2,7 @@ import Link from "next/link";
 import {ArrowUpRight} from "lucide-react";
 import type {Person} from "@/components/people/types";
 import {metaLine} from "@/components/people/helpers";
-import {AvatarRing, DegreeBadge} from "@/components/UI/Avatar";
+import {AvatarRing, DegreeDot} from "@/components/UI/Avatar";
 import ConnectionActions from "@/components/people/ConnectionActions";
 
 export default function PersonCard({
@@ -30,7 +30,7 @@ export default function PersonCard({
                 </div>
             </div>
             <span className="gn-person-badge">
-                <DegreeBadge status={person.status} degree={person.degree}/>
+                <DegreeDot status={person.status} degree={person.degree}/>
             </span>
             <div className="gn-person-b">
                 <Link className="gn-btn gn-btn-ghost gn-btn-xs" href={href}>

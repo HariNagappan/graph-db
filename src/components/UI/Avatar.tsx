@@ -1,5 +1,5 @@
 import type {ConnectionStatus} from "@/components/people/types";
-import {displayDegree, degreeLabel, initials, tint} from "@/components/people/helpers";
+import {initials, tint} from "@/components/people/helpers";
 
 export type AvatarSize = "sm" | "md" | "lg" | "xl" | "2xl";
 
@@ -20,8 +20,9 @@ export function Avatar({
 }
 
 /**
- * Avatar inside the degree ring. The ring is the product's core encoding:
- * solid violet = 1st, dashed cyan = 2nd, dotted lavender = 3rd, hairline = outside.
+ * Avatar inside a solid degree ring: violet = 1st, cyan = 2nd, lavender = 3rd.
+ * People with no degree in range get no ring; the colour is never reinforced by
+ * a dash or dot pattern.
  */
 export function AvatarRing({
     name,
@@ -34,22 +35,40 @@ export function AvatarRing({
     status?: ConnectionStatus;
     size?: AvatarSize;
 }) {
-    const d = displayDegree({name, degree, status, id: "", mutual: 0});
-    const ring = d === null ? 0 : d;
+    const d = status === "self" ? 0 : status === "connected" ? 1 : degree;
+    if (d === null) return <Avatar name={name} size={size}/>;
     return (
-        <span className={`gn-ring gn-ring-${ring}`}>
+        <span className={`gn-ring gn-ring-${d}`}>
             <Avatar name={name} size={size}/>
         </span>
     );
 }
 
-export function DegreeBadge({status, degree}: {status: ConnectionStatus; degree: number | null}) {
+const DEGREE_NAMES: Record<1 | 2 | 3, string> = {
+    1: "1st degree",
+    2: "2nd degree",
+    3: "3rd degree",
+};
+
+/** A colour-only degree marker. The labelled legend lives in the app shell. */
+export function DegreeDot({
+    status,
+    degree,
+    className = "",
+}: {
+    status: ConnectionStatus;
+    degree: number | null;
+    className?: string;
+}) {
     if (status === "self") return <span className="gn-deg gn-deg-self">You</span>;
     const d = status === "connected" ? 1 : degree;
-    if (d === null) return <span className="gn-deg gn-deg-0">Outside</span>;
+    if (d !== 1 && d !== 2 && d !== 3) return null;
     return (
-        <span className={`gn-deg gn-deg-${d}`}>
-            {degreeLabel(d)}
-        </span>
+        <span
+            className={`gn-degree-dot k${d}${className ? ` ${className}` : ""}`}
+            role="img"
+            aria-label={DEGREE_NAMES[d]}
+            title={DEGREE_NAMES[d]}
+        />
     );
 }

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type {Person} from "@/components/people/types";
 import {metaLine} from "@/components/people/helpers";
-import {AvatarRing, DegreeBadge} from "@/components/UI/Avatar";
+import {AvatarRing, DegreeDot} from "@/components/UI/Avatar";
 import ConnectionActions from "@/components/people/ConnectionActions";
 
 export default function PersonRow({
@@ -25,7 +25,7 @@ export default function PersonRow({
             <div className="gn-row-txt">
                 <div className="gn-row-name">
                     <Link href={href} title={person.name}>{person.name}</Link>
-                    <DegreeBadge status={person.status} degree={person.degree}/>
+                    <DegreeDot status={person.status} degree={person.degree}/>
                 </div>
                 <div className="gn-row-sub">{metaLine(person)}</div>
             </div>

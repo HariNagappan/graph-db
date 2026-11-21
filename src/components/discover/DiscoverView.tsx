@@ -1,7 +1,6 @@
 "use client";
 
 import {useDeferredValue, useEffect, useMemo, useState} from "react";
-import Link from "next/link";
 import {useRouter, useSearchParams} from "next/navigation";
 import {Compass, GitBranch, Search, Clock} from "lucide-react";
 import {useNetwork} from "@/components/network/NetworkProvider";
@@ -10,7 +9,7 @@ import {displayDegree} from "@/components/people/helpers";
 import PersonRow from "@/components/people/PersonRow";
 import {EmptyState, ErrorState, PageLoading} from "@/components/UI/States";
 
-type DegreeFilter = "" | "1" | "2" | "3" | "null";
+type DegreeFilter = "" | "1" | "2" | "3";
 
 const RANK: Record<Person["status"], number> = {
     none: 0,
@@ -21,7 +20,7 @@ const RANK: Record<Person["status"], number> = {
 };
 
 function normalizeDegree(value: string | null): DegreeFilter {
-    return value === "1" || value === "2" || value === "3" || value === "null" ? value : "";
+    return value === "1" || value === "2" || value === "3" ? value : "";
 }
 
 export default function DiscoverView() {
@@ -50,7 +49,7 @@ export default function DiscoverView() {
         let out: Person[] = people ?? [];
         if (deferredQ) out = out.filter((p) => p.name.toLowerCase().includes(deferredQ));
         if (degree) {
-            const target = degree === "null" ? null : Number(degree);
+            const target = Number(degree);
             out = out.filter((p) => displayDegree(p) === target);
         }
         if (onlyMutual) out = out.filter((p) => p.mutual > 0);
@@ -175,7 +174,6 @@ export default function DiscoverView() {
                             <option value="1">1st degree</option>
                             <option value="2">2nd degree</option>
                             <option value="3">3rd degree</option>
-                            <option value="null">Outside network</option>
                         </select>
                     </div>
                 </div>
@@ -202,7 +200,7 @@ export default function DiscoverView() {
                         action={
                             filtersActive
                                 ? <button type="button" className="gn-btn gn-btn-secondary gn-btn-sm" onClick={clear}>Clear filters</button>
-                                : <Link className="gn-btn gn-btn-secondary gn-btn-sm" href="/network">Open my network</Link>
+                                : undefined
                         }
                     />
                 ) : (

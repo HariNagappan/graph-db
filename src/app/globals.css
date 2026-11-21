@@ -367,17 +367,8 @@
 .gn-ring::before { content: ""; position: absolute; inset: 0; border-radius: 50%; pointer-events: none; }
 .gn-ring-1::before { box-shadow: inset 0 0 0 2px var(--g-violet); }
 .gn-ring-0::before { box-shadow: inset 0 0 0 1px var(--g-line-2); }
-.gn-ring-2::before {
-  background: repeating-conic-gradient(from 0deg, var(--g-cyan) 0deg 6deg, transparent 6deg 13deg);
-  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 2px));
-  mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 2px));
-}
-.gn-ring-3::before {
-  background-image: radial-gradient(circle, rgba(185, 168, 255, 0.9) 1.1px, transparent 1.3px);
-  background-size: 4px 4px;
-  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2.5px), #000 calc(100% - 2.5px));
-  mask: radial-gradient(farthest-side, transparent calc(100% - 2.5px), #000 calc(100% - 2.5px));
-}
+.gn-ring-2::before { box-shadow: inset 0 0 0 2px var(--g-cyan); }
+.gn-ring-3::before { box-shadow: inset 0 0 0 2px var(--g-lav); }
 
 /* degree badge */
 .gn-deg {
@@ -396,16 +387,17 @@
 .gn-deg-3 { background: var(--g-lav-a); color: var(--g-lav); }
 .gn-deg-0 { background: rgba(148, 163, 209, 0.08); color: var(--g-text-3); }
 .gn-deg-self { background: rgba(148, 163, 209, 0.1); color: var(--g-text-2); }
+.gn-deg.is-ok { background: var(--g-ok-a); color: var(--g-ok); }
 
 /* ring legend glyph */
 .gn-orbit-key { display: inline-flex; align-items: center; gap: 7px; font-size: 11.5px; color: var(--g-text-2); }
 .gn-orbit-key i {
   width: 14px; height: 14px; border-radius: 50%; display: inline-block; flex: 0 0 auto;
 }
-.gn-orbit-key i.k1 { box-shadow: inset 0 0 0 2px var(--g-violet); }
-.gn-orbit-key i.k2 { border: 1px dashed rgba(53, 214, 222, 0.85); }
-.gn-orbit-key i.k3 { border: 1px dotted rgba(185, 168, 255, 0.85); }
-.gn-orbit-key i.k0 { border: 1px solid var(--g-line-3); }
+.gn-orbit-key i.k1 { background: var(--g-violet); }
+.gn-orbit-key i.k2 { background: var(--g-cyan); }
+.gn-orbit-key i.k3 { background: var(--g-lav); }
+.gn-orbit-key i.k0 { background: rgba(148, 163, 209, 0.45); }
 
 /* ==========================================================================
    Cards, stats
@@ -456,10 +448,10 @@
   font-size: 11.5px; color: var(--g-text-3);
 }
 .gn-stat-k { width: 8px; height: 8px; border-radius: 50%; flex: 0 0 auto; }
-.gn-stat-k.k1 { box-shadow: inset 0 0 0 2px var(--g-violet); }
-.gn-stat-k.k2 { box-shadow: inset 0 0 0 2px var(--g-cyan); }
-.gn-stat-k.k3 { box-shadow: inset 0 0 0 2px var(--g-lav); }
-.gn-stat-k.k0 { box-shadow: inset 0 0 0 2px rgba(148, 163, 209, 0.45); }
+.gn-stat-k.k1 { background: var(--g-violet); }
+.gn-stat-k.k2 { background: var(--g-cyan); }
+.gn-stat-k.k3 { background: var(--g-lav); }
+.gn-stat-k.k0 { background: rgba(148, 163, 209, 0.45); }
 
 /* ==========================================================================
    Person card
@@ -1132,12 +1124,6 @@ body {
   border: 1px solid var(--g-line);
   border-radius: 10px;
   background: linear-gradient(180deg, rgba(142, 111, 255, 0.07), rgba(142, 111, 255, 0));
-  transition: border-color var(--g-fast), background var(--g-fast);
-}
-
-.gn-side-card:hover {
-  border-color: var(--g-line-3);
-  background: linear-gradient(180deg, rgba(142, 111, 255, 0.1), rgba(142, 111, 255, 0.02));
 }
 
 .gn-side-card-v {
@@ -1184,6 +1170,48 @@ body {
 .gn-menu-btn {
   display: none;
 }
+
+.gn-degree-key {
+  height: 34px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 22px;
+  border-bottom: 1px solid var(--g-line);
+  background: #080a12;
+}
+
+.gn-degree-key .gn-eyebrow {
+  font-size: 9.5px;
+}
+
+.gn-degree-key-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  color: var(--g-text-2);
+}
+
+.gn-degree-key-item .gn-degree-dot {
+  width: 8px;
+  height: 8px;
+  box-shadow: none;
+}
+
+.gn-degree-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  flex: 0 0 auto;
+  box-shadow: 0 0 0 3px rgba(6, 7, 14, 0.55);
+}
+
+.gn-degree-dot.k1 { background: var(--g-violet); }
+.gn-degree-dot.k2 { background: var(--g-cyan); }
+.gn-degree-dot.k3 { background: var(--g-lav); }
 
 .gn-search.is-sm {
   max-width: 250px;
@@ -2216,8 +2244,8 @@ body {
   }
 
   .gn-orbit {
-    height: 260px;
-    min-height: 260px;
+    height: 220px;
+    min-height: 220px;
   }
 
   .gn-profile-hero-main {
@@ -2243,6 +2271,16 @@ body {
 }
 
 @media (max-width: 620px) {
+  .gn-degree-key {
+    height: 32px;
+    gap: 12px;
+    padding: 0 14px;
+  }
+
+  .gn-degree-key .gn-eyebrow {
+    display: none;
+  }
+
   .gn-profile-hero {
     padding: 18px;
   }

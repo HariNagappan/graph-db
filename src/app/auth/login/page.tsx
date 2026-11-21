@@ -43,9 +43,6 @@ export default function LoginPage() {
     return (
         <AuthFormWrapper>
             <h1 className="gn-auth-title">Sign in or create an account</h1>
-            <p className="gn-auth-sub">
-                Enter your email. We check it against the account table, then take you to the right next step.
-            </p>
 
             <form onSubmit={credLogin} className="gn-auth-body" method="post">
                 <div className="gn-field">
@@ -72,18 +69,7 @@ export default function LoginPage() {
                 >
                     {loading ? <><Loader2 size={16} className="gn-spin"/>Checking…</> : "Continue"}
                 </button>
-
-                <div className="gn-auth-demo">
-                    <span className="gn-dim">Demo network</span>
-                    <span className="gn-mono">alice@demo.test</span>
-                    <span className="gn-dim">·</span>
-                    <span className="gn-mono">admin@gmail.com</span>
-                </div>
             </form>
-
-            <p className="gn-auth-foot">
-                By continuing you agree to the terms of use and the privacy notice.
-            </p>
         </AuthFormWrapper>
     );
 }

@@ -13,10 +13,10 @@ const MAX_PER_RING = 30;
 
 type Plot = {person: Person; angle: number; radius: number};
 
-const RING_STYLE: Record<1 | 2 | 3, {fill: string; stroke: string; dash?: string}> = {
+const RING_STYLE: Record<1 | 2 | 3, {fill: string; stroke: string}> = {
     1: {fill: "#1d1636", stroke: "rgba(142,111,255,0.85)"},
-    2: {fill: "#0f2630", stroke: "rgba(53,214,222,0.7)", dash: "3 2.4"},
-    3: {fill: "#1e1b33", stroke: "rgba(185,168,255,0.45)", dash: "1 3"},
+    2: {fill: "#0f2630", stroke: "rgba(53,214,222,0.7)"},
+    3: {fill: "#1e1b33", stroke: "rgba(185,168,255,0.55)"},
 };
 
 function place(people: Person[], degree: 1 | 2 | 3, offset: number): Plot[] {
@@ -29,8 +29,7 @@ function place(people: Person[], degree: 1 | 2 | 3, offset: number): Plot[] {
 }
 
 /**
- * Radius encodes distance from you. Only real people from /api/network are plotted;
- * the "outside" band has no position inside three hops and is counted in the legend.
+ * Radius encodes distance from you. Only real people from /api/network are plotted.
  *
  * The network API does not return edges between other people (those live behind the
  * admin graph endpoint), so this map draws spokes from you to your 1st degree and
@@ -66,7 +65,7 @@ export default function OrbitMap({people, meName}: {people: Person[]; meName: st
             >
                 <circle className="orb-ring r1" cx={CX} cy={CY} r={RADII[1]}/>
                 <circle className="orb-ring" cx={CX} cy={CY} r={RADII[2]}/>
-                <circle className="orb-ring" cx={CX} cy={CY} r={RADII[3]} strokeDasharray="2 6"/>
+                <circle className="orb-ring" cx={CX} cy={CY} r={RADII[3]}/>
 
                 {place(first, 1, 0).map((p) => {
                     const q = xy(p);
@@ -87,7 +86,7 @@ export default function OrbitMap({people, meName}: {people: Person[]; meName: st
                     const d = displayDegree(p.person);
                     const degree = (d === 2 ? 2 : d === 3 ? 3 : 1) as 1 | 2 | 3;
                     const style = RING_STYLE[degree];
-                    const label = d === null ? "outside your network" : `${d} degree, ${plural(p.person.mutual, "mutual")}`;
+                    const label = `${degree} degree, ${plural(p.person.mutual, "mutual")}`;
                     return (
                         <g
                             key={p.person.id}
@@ -111,7 +110,6 @@ export default function OrbitMap({people, meName}: {people: Person[]; meName: st
                                 fill={style.fill}
                                 stroke={style.stroke}
                                 strokeWidth={1.3}
-                                strokeDasharray={style.dash}
                             />
                             <text
                                 x={q.x.toFixed(1)}

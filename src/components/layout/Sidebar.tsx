@@ -20,10 +20,10 @@ export default function Sidebar({open, onClose}: {open: boolean; onClose: () => 
     return (
         <aside className={`gn-side${open ? " is-open" : ""}`} id="gn-side" aria-label="Primary navigation">
             <div className="gn-brand">
-                <Link href="/" style={{display: "flex", alignItems: "center", gap: 9}}>
+                <div style={{display: "flex", alignItems: "center", gap: 9}}>
                     <BrandMark size={26} className="gn-brand-mark"/>
                     <span className="gn-wordmark">GraphNet</span>
-                </Link>
+                </div>
                 <button
                     type="button"
                     className="gn-side-close"
@@ -37,7 +37,8 @@ export default function Sidebar({open, onClose}: {open: boolean; onClose: () => 
             <nav className="gn-nav" aria-label="Workspace">
                 <div className="gn-nav-label">Workspace</div>
                 {NAV.map((item) => {
-                    const active = pathname === item.href;
+                    const active = pathname === item.href
+                        || (item.href === "/network" && pathname === "/connections");
                     const Icon = item.icon;
                     const badge = item.href === "/requests" ? counts.received : 0;
                     return (
@@ -56,7 +57,7 @@ export default function Sidebar({open, onClose}: {open: boolean; onClose: () => 
             </nav>
 
             <div className="gn-side-foot">
-                <Link href="/network" className="gn-side-card" aria-label="Open your network">
+                <div className="gn-side-card">
                     <div className="gn-eyebrow">Your graph</div>
                     <div className="gn-side-card-v">
                         {counts.inside}
@@ -65,7 +66,7 @@ export default function Sidebar({open, onClose}: {open: boolean; onClose: () => 
                     <div className="gn-tiny gn-dim" style={{marginTop: 4}}>
                         {counts.first} direct · {counts.second + counts.third} indirect
                     </div>
-                </Link>
+                </div>
             </div>
         </aside>
     );

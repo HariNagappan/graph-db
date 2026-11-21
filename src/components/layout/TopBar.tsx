@@ -2,14 +2,11 @@
 
 import {useEffect, useRef} from "react";
 import {useRouter} from "next/navigation";
-import Link from "next/link";
-import {Inbox, Menu, Search} from "lucide-react";
-import {useNetwork} from "@/components/network/NetworkProvider";
+import {Menu, Search} from "lucide-react";
 import UserMenu from "@/components/layout/UserMenu";
 
 export default function TopBar({onMenu}: {onMenu: () => void}) {
     const router = useRouter();
-    const {counts} = useNetwork();
     const inputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
@@ -56,15 +53,6 @@ export default function TopBar({onMenu}: {onMenu: () => void}) {
             </form>
 
             <div className="gn-top-right">
-                <Link
-                    className="gn-iconbtn"
-                    href="/requests"
-                    aria-label={counts.received ? `Requests, ${counts.received} waiting` : "Requests"}
-                >
-                    <Inbox size={18}/>
-                    {counts.received > 0 && <span className="gn-dot" aria-hidden="true"/>}
-                </Link>
-                <span className="gn-top-sep" aria-hidden="true"/>
                 <UserMenu/>
             </div>
         </header>

@@ -4,6 +4,7 @@ import {useEffect, useRef, useState} from "react";
 import {usePathname} from "next/navigation";
 import Sidebar from "@/components/layout/Sidebar";
 import TopBar from "@/components/layout/TopBar";
+import DegreeLegend from "@/components/layout/DegreeLegend";
 import {NetworkProvider} from "@/components/network/NetworkProvider";
 import {ToastProvider} from "@/components/UI/Toast";
 
@@ -41,6 +42,7 @@ export default function AppShell({children}: {children: React.ReactNode}) {
                     <Sidebar open={menuOpen} onClose={() => setMenuOpen(false)}/>
                     <div className="gn-main">
                         <TopBar onMenu={() => setMenuOpen(true)}/>
+                        <DegreeLegend/>
                         <div className="gn-scroll" id="gn-scroll" ref={scrollRef}>
                             <div className="gn-page">{children}</div>
                         </div>

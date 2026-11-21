@@ -1,9 +1,8 @@
 "use client";
 
 import {useDeferredValue, useEffect, useMemo, useState} from "react";
-import Link from "next/link";
 import {useRouter, useSearchParams} from "next/navigation";
-import {Clock, Compass, GitBranch, LayoutGrid, List, Search, Users} from "lucide-react";
+import {Clock, GitBranch, LayoutGrid, List, Search, Users} from "lucide-react";
 import {useNetwork} from "@/components/network/NetworkProvider";
 import type {Person} from "@/components/people/types";
 import type {PeopleSort} from "@/components/people/helpers";
@@ -12,37 +11,33 @@ import PersonCard from "@/components/people/PersonCard";
 import PersonRow from "@/components/people/PersonRow";
 import {EmptyState, ErrorState, PageLoading} from "@/components/UI/States";
 
-type Tab = "all" | "first" | "second" | "third" | "outside";
+type Tab = "all" | "first" | "second" | "third";
 
-const TABS: {key: Tab; label: string}[] = [
+const TABS: {key: Tab; label: string; tone?: string}[] = [
     {key: "all", label: "All"},
-    {key: "first", label: "1st"},
-    {key: "second", label: "2nd"},
-    {key: "third", label: "3rd"},
-    {key: "outside", label: "Outside"},
+    {key: "first", label: "1st", tone: "k1"},
+    {key: "second", label: "2nd", tone: "k2"},
+    {key: "third", label: "3rd", tone: "k3"},
 ];
 
 const TITLES: Record<Tab, string> = {
-    all: "Everyone in your network",
+    all: "All people",
     first: "Your 1st degree connections",
     second: "Two steps away",
     third: "Three steps away",
-    outside: "Outside your network",
 };
 
 function normalizeTab(value: string | null): Tab {
     if (value === "1" || value === "first") return "first";
     if (value === "2" || value === "second") return "second";
     if (value === "3" || value === "third") return "third";
-    if (value === "null" || value === "outside") return "outside";
     return "all";
 }
 
-function targetDegree(tab: Tab): number | null | undefined {
+function targetDegree(tab: Tab): number | undefined {
     if (tab === "first") return 1;
     if (tab === "second") return 2;
     if (tab === "third") return 3;
-    if (tab === "outside") return null;
     return undefined;
 }
 
@@ -83,12 +78,12 @@ export default function NetworkView() {
         first: buckets.first.length,
         second: buckets.second.length,
         third: buckets.third.length,
-        outside: buckets.outside.length,
     };
 
     const changeTab = (next: Tab) => {
         setTab(next);
-        router.replace(next === "all" ? "/network" : `/network?degree=${next === "first" ? "1" : next === "second" ? "2" : next === "third" ? "3" : "null"}`, {scroll: false});
+        const degree = next === "first" ? "1" : next === "second" ? "2" : "3";
+        router.replace(next === "all" ? "/network" : `/network?degree=${degree}`, {scroll: false});
     };
 
     const clearFilters = () => {
@@ -157,6 +152,7 @@ export default function NetworkView() {
                             className={`gn-tab${tab === t.key ? " is-active" : ""}`}
                             onClick={() => changeTab(t.key)}
                         >
+                            {t.tone && <span className={`gn-stat-k ${t.tone}`} aria-hidden="true"/>}
                             {t.label}
                             <span className="gn-tab-n">{counts[t.key]}</span>
                         </button>
@@ -212,7 +208,7 @@ export default function NetworkView() {
                         action={
                             filtersActive
                                 ? <button type="button" className="gn-btn gn-btn-secondary gn-btn-sm" onClick={clearFilters}>Clear filters</button>
-                                : <Link className="gn-btn gn-btn-primary gn-btn-sm" href="/discover"><Compass size={14}/>Find people</Link>
+                                : undefined
                         }
                     />
                 </div>

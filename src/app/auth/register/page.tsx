@@ -82,7 +82,7 @@ export default function RegisterPage() {
                             if (error) setError("");
                         }}
                     />
-                    <span className="gn-hint">Between 3 and 60 characters.</span>
+                    <span className="gn-hint">Between 3 and 60 characters. Spaces are allowed between names.</span>
                     {error && <div className="gn-err"><CircleAlert size={14}/>{error}</div>}
                 </div>
 
