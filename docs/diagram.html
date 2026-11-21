@@ -17,7 +17,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1440" height="1016" viewBox="0 0 1440 1016"
      role="img" aria-labelledby="gn-model-title gn-model-desc">
   <title id="gn-model-title">GraphNet data model: SQLite users table joined by UUID to Neo4j User nodes, with 1st, 2nd and 3rd degree rings and the matching network UI</title>
-  <desc id="gn-model-desc">Left, the SQLite users table and the Neo4j User node with its CONNECTED and REQUESTED relationships, joined by the same UUID. Right, Alice at the centre of three rings showing Bob and Carol as 1st degree, Dave as 2nd degree with two mutual connections, Eve as 3rd degree, and a pending request from Ivan. Below, the My network screen listing Bob, Dave and Ivan with the same degrees.</desc>
+  <desc id="gn-model-desc">Left, the SQLite users table and the Neo4j User node with its CONNECTED and REQUESTED relationships, joined by the same UUID. Right, Alice at the centre of three rings showing Bob and Carol as 1st degree, Dave as 2nd degree with two mutual connections, Eve as 3rd degree, a pending request from Ivan, and Grace and Heidi as a separate pair with no path to her. Below, the My network screen listing Bob, Dave and Ivan with the same degrees.</desc>
 
   <defs>
     <marker id="gn-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
@@ -156,6 +156,14 @@
   <text x="768" y="313" class="mono" font-size="9" fill="#a3670d" text-anchor="middle">sent a request</text>
 
   <text x="1016" y="646" class="mono" font-size="9.5" fill="#6f7076" text-anchor="middle">each ring is one more hop</text>
+
+  <!-- a group with no path to Alice at all -->
+  <line x1="700" y1="556" x2="764" y2="600" stroke="rgba(28,28,30,0.18)" stroke-width="1.2"/>
+  <circle cx="700" cy="556" r="18" fill="#faf9f6" stroke="rgba(28,28,30,0.28)" stroke-width="1"/>
+  <text x="700" y="561" font-size="12" font-weight="600" fill="#6f7076" text-anchor="middle">G</text>
+  <circle cx="764" cy="600" r="18" fill="#faf9f6" stroke="rgba(28,28,30,0.28)" stroke-width="1"/>
+  <text x="764" y="605" font-size="12" font-weight="600" fill="#6f7076" text-anchor="middle">H</text>
+  <text x="732" y="640" class="mono" font-size="9" fill="#6f7076" text-anchor="middle">Grace &amp; Heidi &#183; no path to you</text>
 
   <!-- ============ zone 03 label ============ -->
   <text x="48" y="722" class="mono" font-size="10" letter-spacing="0.14em" fill="#6f7076">03 &#183; THE UI</text>

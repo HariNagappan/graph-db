@@ -11,7 +11,7 @@ Login data goes in a **relational database** (SQLite) and the social graph goes 
 
 ## How it works at a glance
 
-![GraphNet data model: the SQLite users table joined by the same UUID to Neo4j User nodes, three rings showing Alice's 1st, 2nd and 3rd degree connections with a pending request from Ivan, and the matching My network screen](diagram.png)
+![GraphNet data model: the SQLite users table joined by the same UUID to Neo4j User nodes, three rings showing Alice's 1st, 2nd and 3rd degree connections with a pending request from Ivan, a separate pair with no path to her, and the matching My network screen](diagram.png)
 
 One UUID is the only link between the two stores. Degrees and mutual connections are
 path questions ("how many hops away is this person?"), which is exactly what a graph
@@ -141,29 +141,23 @@ never shows up in anyone's network and can't send or accept connection requests.
 
 ### Sample users
 
-All sample users have the password **`Demo@123`**.
+All sample users have the password **`Demo@123`**. The diagram above shows who is connected
+to whom, so this table only covers what each account is useful for.
 
-| Name | Email | Connected to | Notes |
-|---|---|---|---|
-| Alice | `alice@demo.test` | Bob, Carol | Has a pending request from Ivan. **Best account to start with.** |
-| Bob | `bob@demo.test` | Alice, Carol, Dave | |
-| Carol | `carol@demo.test` | Alice, Bob, Dave | |
-| Dave | `dave@demo.test` | Bob, Carol, Eve | |
-| Eve | `eve@demo.test` | Dave, Frank | |
-| Frank | `frank@demo.test` | Eve | |
-| Grace | `grace@demo.test` | Heidi | A separate group, unconnected to the others |
-| Heidi | `heidi@demo.test` | Grace | |
-| Ivan | `ivan@demo.test` | (nobody yet) | Has sent Alice a connection request |
-
-Signed in as **Alice**, you'll see:
-
-| Degree | People | Why |
+| Name | Email | Notes |
 |---|---|---|
-| 1st | Bob, Carol | Directly connected |
-| 2nd | Dave (2 mutual) | Connected through Bob and through Carol |
-| 3rd | Eve | Alice → Bob → Dave → Eve |
-| Outside network | Frank, Grace, Heidi | More than 3 steps away, or no path at all |
-| Invitation | Ivan | Ivan → Alice request is pending |
+| Alice | `alice@demo.test` | **Best account to start with.** Has a pending request from Ivan. |
+| Bob | `bob@demo.test` | |
+| Carol | `carol@demo.test` | |
+| Dave | `dave@demo.test` | |
+| Eve | `eve@demo.test` | |
+| Frank | `frank@demo.test` | Outside Alice's network |
+| Grace | `grace@demo.test` | A separate group, with no path to Alice |
+| Heidi | `heidi@demo.test` | |
+| Ivan | `ivan@demo.test` | Sent Alice a request; has no connections yet |
+
+Signed in as **Alice**, Bob and Carol are 1st degree, Dave is 2nd with 2 mutual connections,
+Eve is 3rd, Ivan's invitation is waiting, and Frank, Grace and Heidi sit outside your network.
 
 ---
 
