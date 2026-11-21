@@ -4,6 +4,7 @@ import {useEffect, useRef} from "react";
 import {useRouter} from "next/navigation";
 import {Menu, Search} from "lucide-react";
 import UserMenu from "@/components/layout/UserMenu";
+import ThemeToggle from "@/components/theme/ThemeToggle";
 
 export default function TopBar({onMenu}: {onMenu: () => void}) {
     const router = useRouter();
@@ -53,6 +54,8 @@ export default function TopBar({onMenu}: {onMenu: () => void}) {
             </form>
 
             <div className="gn-top-right">
+                <ThemeToggle/>
+                <span className="gn-top-sep" aria-hidden="true"/>
                 <UserMenu/>
             </div>
         </header>

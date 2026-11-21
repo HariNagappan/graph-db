@@ -13,11 +13,6 @@ const MAX_PER_RING = 30;
 
 type Plot = {person: Person; angle: number; radius: number};
 
-const RING_STYLE: Record<1 | 2 | 3, {fill: string; stroke: string}> = {
-    1: {fill: "#1d1636", stroke: "rgba(142,111,255,0.85)"},
-    2: {fill: "#0f2630", stroke: "rgba(53,214,222,0.7)"},
-    3: {fill: "#1e1b33", stroke: "rgba(185,168,255,0.55)"},
-};
 
 function place(people: Person[], degree: 1 | 2 | 3, offset: number): Plot[] {
     const list = people.slice(0, MAX_PER_RING);
@@ -60,6 +55,7 @@ export default function OrbitMap({people, meName}: {people: Person[]; meName: st
         <div className="gn-orbit">
             <svg
                 viewBox={`0 0 ${W} ${H}`}
+                preserveAspectRatio="xMidYMid slice"
                 role="img"
                 aria-label={`Network map: ${plural(first.length, "first degree connection")}, ${plural(second.length, "second degree connection")}, ${plural(third.length, "third degree connection")}.`}
             >
@@ -85,7 +81,6 @@ export default function OrbitMap({people, meName}: {people: Person[]; meName: st
                     const q = xy(p);
                     const d = displayDegree(p.person);
                     const degree = (d === 2 ? 2 : d === 3 ? 3 : 1) as 1 | 2 | 3;
-                    const style = RING_STYLE[degree];
                     const label = `${degree} degree, ${plural(p.person.mutual, "mutual")}`;
                     return (
                         <g
@@ -104,21 +99,16 @@ export default function OrbitMap({people, meName}: {people: Person[]; meName: st
                         >
                             <title>{`${p.person.name} — ${label}`}</title>
                             <circle
+                                className={`orb-node-body n${degree}`}
                                 cx={q.x.toFixed(1)}
                                 cy={q.y.toFixed(1)}
                                 r={14}
-                                fill={style.fill}
-                                stroke={style.stroke}
-                                strokeWidth={1.3}
                             />
                             <text
+                                className="orb-node-ini"
                                 x={q.x.toFixed(1)}
                                 y={(q.y + 3).toFixed(1)}
                                 textAnchor="middle"
-                                fontFamily="var(--g-mono)"
-                                fontSize={9.4}
-                                fill="#c3cbe0"
-                                pointerEvents="none"
                             >
                                 {initials(p.person.name)}
                             </text>
@@ -127,15 +117,12 @@ export default function OrbitMap({people, meName}: {people: Person[]; meName: st
                 })}
 
                 <g aria-hidden="true">
-                    <circle cx={CX} cy={CY} r={22} fill="#6c4bf2" stroke="rgba(196,178,255,0.85)" strokeWidth={1.5}/>
+                    <circle className="orb-center" cx={CX} cy={CY} r={22}/>
                     <text
+                        className="orb-center-ini"
                         x={CX}
                         y={CY + 3.5}
                         textAnchor="middle"
-                        fontFamily="var(--g-mono)"
-                        fontSize={11}
-                        fontWeight={600}
-                        fill="#fff"
                     >
                         {initials(meName)}
                     </text>

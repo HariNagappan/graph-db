@@ -114,7 +114,8 @@ so you can sign in right away. Every account below is ready to use.
 The admin goes straight to the **Admin** page, which shows:
 
 - the live **Neo4j graph**, which you can explore by dragging nodes around
-- the **SQLite `users` table** (password hashes are hidden)
+- the **SQLite `users` table** (`id`, `email`, `created_at`). It lists the network's members
+  only — the admin account is not a row of it — and password hashes are never shown.
 
 The admin account exists only in SQLite (`role = 'admin'`) and has no `:User` node, so it
 never shows up in anyone's network and can't send or accept connection requests.

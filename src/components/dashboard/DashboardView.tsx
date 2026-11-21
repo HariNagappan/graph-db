@@ -4,9 +4,8 @@ import {useEffect, useState} from "react";
 import {Compass, Inbox} from "lucide-react";
 import {useNetwork} from "@/components/network/NetworkProvider";
 import type {PeopleSort} from "@/components/people/helpers";
-import {firstName, plural, sortPeople, suggestedPeople} from "@/components/people/helpers";
+import {firstName, sortPeople, suggestedPeople} from "@/components/people/helpers";
 import OrbitMap from "@/components/dashboard/OrbitMap";
-import PersonCard from "@/components/people/PersonCard";
 import PersonRow from "@/components/people/PersonRow";
 import MiniPersonRow from "@/components/people/MiniPersonRow";
 import {EmptyState, ErrorState, PageLoading} from "@/components/UI/States";
@@ -14,7 +13,7 @@ import {EmptyState, ErrorState, PageLoading} from "@/components/UI/States";
 const RING_CAP = 30;
 
 export default function DashboardView() {
-    const {me, people, buckets, counts, loading, error, refresh} = useNetwork();
+    const {me, people, buckets, counts, meta, loading, error, refresh} = useNetwork();
     const [greeting, setGreeting] = useState("Welcome back");
 
     useEffect(() => {
@@ -72,9 +71,17 @@ export default function DashboardView() {
                 <div className="gn-page-head-txt">
                     <div className="gn-eyebrow">Network overview</div>
                     <h1 className="gn-h1" style={{marginTop: 7}}>{hello}</h1>
-                    <p className="gn-sub" style={{marginTop: 6, maxWidth: 560}}>
-                        {plural(counts.first, "person", "people")} know you directly.{" "}
-                        {plural(counts.second + counts.third, "person", "people")} more sit one or two steps out.
+                    <p className="gn-meta" style={{marginTop: 8}}>
+                        <span>
+                            <b>{counts.inside + 1}</b> {counts.inside + 1 === 1 ? "node" : "nodes"} within 3 steps
+                        </span>
+                        <i className="sep" aria-hidden="true"/>
+                        <span>
+                            <b>{counts.first + counts.sent + counts.received}</b>{" "}
+                            {counts.first + counts.sent + counts.received === 1 ? "direct edge" : "direct edges"}
+                        </span>
+                        <i className="sep" aria-hidden="true"/>
+                        <span><b>{meta.queryMs ?? "—"}</b> ms Cypher</span>
                     </p>
                 </div>
             </div>
@@ -146,7 +153,7 @@ export default function DashboardView() {
                         )}
                         <div className="gn-card-f">
                             <span className="gn-tiny gn-dim">
-                                <span className="gn-num" style={{color: "var(--g-text-2)"}}>{counts.sent}</span>{" "}
+                                <span className="gn-num" style={{color: "var(--text-secondary)"}}>{counts.sent}</span>{" "}
                                 sent · awaiting response
                             </span>
                         </div>
@@ -159,8 +166,8 @@ export default function DashboardView() {
                 <span className="gn-hint-inline">Ranked by mutual connections</span>
             </div>
             {suggestions.length > 0 ? (
-                <div className="gn-people">
-                    {suggestions.map((p) => <PersonCard key={p.id} person={p}/>)}
+                <div className="gn-card gn-list-card">
+                    {suggestions.map((p) => <PersonRow key={p.id} person={p}/>)}
                 </div>
             ) : (
                 <div className="gn-card">

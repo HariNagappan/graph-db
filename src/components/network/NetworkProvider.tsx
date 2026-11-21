@@ -30,6 +30,7 @@ type NetworkApi = {
     people: Person[] | null;
     buckets: DegreeBuckets;
     counts: Counts;
+    meta: {queryMs: number | null};
     loading: boolean;
     error: string;
     refresh: () => Promise<void>;
@@ -57,6 +58,7 @@ const EMPTY_BUCKETS: DegreeBuckets = {all: [], first: [], second: [], third: []}
 export function NetworkProvider({children}: {children: React.ReactNode}) {
     const {data: session} = useSession();
     const [people, setPeople] = useState<Person[] | null>(null);
+    const [meta, setMeta] = useState<{queryMs: number | null}>({queryMs: null});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [busy, setBusy] = useState<string[]>([]);
@@ -76,9 +78,10 @@ export function NetworkProvider({children}: {children: React.ReactNode}) {
                         : "Could not load your network. Check that the graph database is reachable."
                 );
             }
-            const data = await res.json() as {users: Person[]};
+            const data = await res.json() as {users: Person[]; meta?: {queryMs: number}};
             if (seq !== sequence.current) return;
             setPeople(data.users);
+            setMeta({queryMs: data.meta?.queryMs ?? null});
             setError("");
         } catch (e) {
             if (seq !== sequence.current) return;
@@ -163,12 +166,13 @@ export function NetworkProvider({children}: {children: React.ReactNode}) {
         people,
         buckets,
         counts,
+        meta,
         loading,
         error,
         refresh,
         act,
         isBusy: (id: string) => busy.includes(id),
-    }), [me, people, buckets, counts, loading, error, refresh, act, busy]);
+    }), [me, people, buckets, counts, meta, loading, error, refresh, act, busy]);
 
     return <NetworkContext.Provider value={value}>{children}</NetworkContext.Provider>;
 }

@@ -20,7 +20,7 @@ export function Avatar({
 }
 
 /**
- * Avatar inside a solid degree ring: violet = 1st, cyan = 2nd, lavender = 3rd.
+ * Avatar inside a solid degree ring: emerald = 1st, amber = 2nd, slate = 3rd.
  * People with no degree in range get no ring; the colour is never reinforced by
  * a dash or dot pattern.
  */

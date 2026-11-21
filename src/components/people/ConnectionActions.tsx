@@ -149,7 +149,7 @@ export default function ConnectionActions({
                 title="Remove connection?"
                 body={
                     <>
-                        <strong style={{color: "var(--g-text)"}}>{person.name}</strong> will be removed from
+                        <strong style={{color: "var(--text-primary)"}}>{person.name}</strong> will be removed from
                         your connections. The <span className="gn-mono">CONNECTED</span> edge is deleted, and
                         either of you can send a new request later.
                     </>

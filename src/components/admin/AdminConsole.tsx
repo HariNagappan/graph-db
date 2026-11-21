@@ -19,6 +19,7 @@ import BrandMark from "@/components/UI/BrandMark";
 import GraphCanvas, {type GraphHandle} from "@/components/admin/GraphCanvas";
 import GraphDetailPanel from "@/components/admin/GraphDetailPanel";
 import UsersTable from "@/components/admin/UsersTable";
+import ThemeToggle from "@/components/theme/ThemeToggle";
 import {EmptyState, ErrorState} from "@/components/UI/States";
 
 type AdminData = {graph: WholeGraph; users: AdminUser[]};
@@ -33,8 +34,6 @@ export default function AdminConsole() {
     const [pane, setPane] = useState<"graph" | "users">("graph");
 
     const graphRef = useRef<GraphHandle>(null);
-    const graphAreaRef = useRef<HTMLDivElement>(null);
-    const tableRef = useRef<HTMLDivElement>(null);
     const sequence = useRef(0);
 
     const load = useCallback(async () => {
@@ -96,11 +95,8 @@ export default function AdminConsole() {
     const selectedNode = selectedId ? nodes.find((n) => n.id === selectedId) ?? null : null;
     const selectedStats = selectedId ? nodeStats[selectedId] ?? null : null;
 
-    const jumpTo = (next: "graph" | "users") => {
-        setPane(next);
-        const target = next === "graph" ? graphAreaRef.current : tableRef.current;
-        target?.scrollIntoView({behavior: "smooth", block: "start"});
-    };
+    // The rail switches the main area between the graph and the users table.
+    const jumpTo = (next: "graph" | "users") => setPane(next);
 
     const searchNode = () => {
         const q = nodeQuery.trim().toLowerCase();
@@ -161,73 +157,87 @@ export default function AdminConsole() {
                 </button>
             </aside>
 
-            <div className="gn-admin-main">
+            <div className="gn-admin-main" data-pane={pane}>
                 <div className="gn-admin-bar">
-                    <span className="gn-admin-title">Network graph</span>
+                    <span className="gn-admin-title">{pane === "graph" ? "Network graph" : "SQLite users"}</span>
                     <div className="gn-admin-counts">
-                        <span className="gn-admin-count"><b>{data ? nodes.length : "—"}</b>nodes</span>
-                        <span className="gn-admin-count"><b>{data ? connected : "—"}</b>connected</span>
-                        <span className="gn-admin-count"><b>{data ? requested : "—"}</b>requested</span>
+                        {pane === "graph" ? (
+                            <>
+                                <span className="gn-admin-count"><b>{data ? nodes.length : "—"}</b>nodes</span>
+                                <span className="gn-admin-count"><b>{data ? connected : "—"}</b>connected</span>
+                                <span className="gn-admin-count"><b>{data ? requested : "—"}</b>requested</span>
+                            </>
+                        ) : (
+                            <span className="gn-admin-count">
+                                <b>{data ? data.users.length : "—"}</b>rows · admin excluded
+                            </span>
+                        )}
                     </div>
                     <div className="gn-graph-toolbar">
-                        <div className="gn-search is-sm" style={{height: 28, width: 200}}>
-                            <span className="gn-search-ico"><Search size={13}/></span>
-                            <input
-                                type="search"
-                                value={nodeQuery}
-                                onChange={(e) => setNodeQuery(e.target.value)}
-                                onKeyDown={(e) => {
-                                    if (e.key === "Enter") {
-                                        e.preventDefault();
-                                        searchNode();
-                                    }
-                                }}
-                                placeholder="Find a node"
-                                aria-label="Find a node"
-                                style={{fontSize: 12}}
-                            />
-                        </div>
-                        <button
-                            type="button"
-                            className={`gn-toggle${hidden.CONNECTED ? "" : " is-on"}`}
-                            onClick={() => toggleRelation("CONNECTED")}
-                            aria-pressed={!hidden.CONNECTED}
-                        >
-                            <i/>CONNECTED
-                        </button>
-                        <button
-                            type="button"
-                            className={`gn-toggle${hidden.REQUESTED ? "" : " is-on"}`}
-                            onClick={() => toggleRelation("REQUESTED")}
-                            aria-pressed={!hidden.REQUESTED}
-                        >
-                            <i className="req"/>REQUESTED
-                        </button>
-                        <span className="gn-top-sep"/>
-                        <button
-                            type="button"
-                            className="gn-iconbtn"
-                            onClick={() => graphRef.current?.zoomIn()}
-                            aria-label="Zoom in"
-                        >
-                            <ZoomIn size={16}/>
-                        </button>
-                        <button
-                            type="button"
-                            className="gn-iconbtn"
-                            onClick={() => graphRef.current?.zoomOut()}
-                            aria-label="Zoom out"
-                        >
-                            <ZoomOut size={16}/>
-                        </button>
-                        <button
-                            type="button"
-                            className="gn-iconbtn"
-                            onClick={() => graphRef.current?.fit()}
-                            aria-label="Fit graph"
-                        >
-                            <Maximize2 size={16}/>
-                        </button>
+                        {pane === "graph" && (
+                            <>
+                                <div className="gn-search is-sm" style={{height: 28, width: 200}}>
+                                    <span className="gn-search-ico"><Search size={13}/></span>
+                                    <input
+                                        type="search"
+                                        value={nodeQuery}
+                                        onChange={(e) => setNodeQuery(e.target.value)}
+                                        onKeyDown={(e) => {
+                                            if (e.key === "Enter") {
+                                                e.preventDefault();
+                                                searchNode();
+                                            }
+                                        }}
+                                        placeholder="Find a node"
+                                        aria-label="Find a node"
+                                        style={{fontSize: 12}}
+                                    />
+                                </div>
+                                <button
+                                    type="button"
+                                    className={`gn-toggle${hidden.CONNECTED ? "" : " is-on"}`}
+                                    onClick={() => toggleRelation("CONNECTED")}
+                                    aria-pressed={!hidden.CONNECTED}
+                                >
+                                    <i/>CONNECTED
+                                </button>
+                                <button
+                                    type="button"
+                                    className={`gn-toggle${hidden.REQUESTED ? "" : " is-on"}`}
+                                    onClick={() => toggleRelation("REQUESTED")}
+                                    aria-pressed={!hidden.REQUESTED}
+                                >
+                                    <i className="req"/>REQUESTED
+                                </button>
+                                <span className="gn-top-sep"/>
+                                <button
+                                    type="button"
+                                    className="gn-iconbtn"
+                                    onClick={() => graphRef.current?.zoomIn()}
+                                    aria-label="Zoom in"
+                                >
+                                    <ZoomIn size={16}/>
+                                </button>
+                                <button
+                                    type="button"
+                                    className="gn-iconbtn"
+                                    onClick={() => graphRef.current?.zoomOut()}
+                                    aria-label="Zoom out"
+                                >
+                                    <ZoomOut size={16}/>
+                                </button>
+                                <button
+                                    type="button"
+                                    className="gn-iconbtn"
+                                    onClick={() => graphRef.current?.fit()}
+                                    aria-label="Fit graph"
+                                >
+                                    <Maximize2 size={16}/>
+                                </button>
+                                <span className="gn-top-sep"/>
+                            </>
+                        )}
+                        <ThemeToggle/>
                     </div>
                 </div>
 
@@ -260,7 +270,7 @@ export default function AdminConsole() {
                     </div>
                 ) : (
                     <>
-                        <div className="gn-graph-area" ref={graphAreaRef}>
+                        <div className="gn-graph-area">
                             <GraphCanvas
                                 ref={graphRef}
                                 nodes={nodes}
@@ -295,9 +305,7 @@ export default function AdminConsole() {
                             />
                         </div>
 
-                        <div ref={tableRef}>
-                            <UsersTable users={data.users} selectedNodeId={selectedId}/>
-                        </div>
+                        <UsersTable users={data.users} selectedNodeId={selectedId}/>
                     </>
                 )}
             </div>

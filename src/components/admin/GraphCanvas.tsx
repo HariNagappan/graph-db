@@ -237,7 +237,7 @@ const GraphCanvas = forwardRef<GraphHandle, Props>(function GraphCanvas(
         });
     }, []);
 
-    const fit = useCallback(() => {
+    const fitWithMin = useCallback((minK = 0) => {
         const points = Object.values(posRef.current);
         const {w, h} = sizeRef.current;
         if (points.length === 0 || w === 0 || h === 0) return;
@@ -256,7 +256,8 @@ const GraphCanvas = forwardRef<GraphHandle, Props>(function GraphCanvas(
         const pad = 56;
         const width = Math.max(maxX - minX, 1);
         const height = Math.max(maxY - minY, 1);
-        const k = clampK(Math.min((w - pad * 2) / width, (h - pad * 2) / height));
+        const natural = Math.min((w - pad * 2) / width, (h - pad * 2) / height);
+        const k = clampK(Math.max(natural, minK));
 
         setView({
             k,
@@ -264,6 +265,8 @@ const GraphCanvas = forwardRef<GraphHandle, Props>(function GraphCanvas(
             y: h / 2 - ((minY + maxY) / 2) * k,
         });
     }, []);
+
+    const fit = useCallback(() => fitWithMin(0), [fitWithMin]);
 
     const zoomIn = useCallback(() => {
         const {w, h} = sizeRef.current;
@@ -299,8 +302,10 @@ const GraphCanvas = forwardRef<GraphHandle, Props>(function GraphCanvas(
         const key = `${Math.round(size.w)}x${Math.round(size.h)}:${signature}`;
         if (fittedFor.current === key) return;
         fittedFor.current = key;
-        fit();
-    }, [size.w, size.h, positions, signature, fit]);
+        // On narrow screens, readability beats showing every node at an unreadable scale.
+        // The Fit control still returns to the complete overview.
+        fitWithMin(size.w < 980 ? 0.72 : 0);
+    }, [size.w, size.h, positions, signature, fitWithMin]);
 
     // Native wheel listener so preventDefault works reliably.
     useEffect(() => {
@@ -488,7 +493,7 @@ const GraphCanvas = forwardRef<GraphHandle, Props>(function GraphCanvas(
                         markerHeight="6"
                         orient="auto"
                     >
-                        <path d="M0,0 L10,5 L0,10 z" fill="rgba(53,214,222,0.85)"/>
+                        <path className="g-arrow-head" d="M0,0 L10,5 L0,10 z"/>
                     </marker>
                 </defs>
 
@@ -575,9 +580,9 @@ const GraphCanvas = forwardRef<GraphHandle, Props>(function GraphCanvas(
                     </span>
                     Fit
                 </button>
-                <span style={{width: 1, height: 16, background: "var(--g-line-2)"}}/>
+                <span style={{width: 1, height: 16, background: "var(--border)"}}/>
                 <span className="gn-tiny gn-dim gn-mono gn-zoom">{Math.round(view.k * 100)}%</span>
-                <span style={{width: 1, height: 16, background: "var(--g-line-2)"}}/>
+                <span style={{width: 1, height: 16, background: "var(--border)"}}/>
                 <span className="gn-tiny gn-dim" style={{paddingRight: 6}}>Drag nodes · click to inspect</span>
             </div>
 

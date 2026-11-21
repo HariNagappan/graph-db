@@ -9,7 +9,7 @@ import ConnectionActions from "@/components/people/ConnectionActions";
 import {EmptyState, ErrorState, PageLoading} from "@/components/UI/States";
 
 export default function RequestsView() {
-    const {people, counts, loading, error, refresh} = useNetwork();
+    const {people, counts, meta, loading, error, refresh} = useNetwork();
 
     if (loading && !people) return <PageLoading/>;
     if (error && !people) return <ErrorState message={error} onRetry={() => void refresh()}/>;
@@ -23,8 +23,14 @@ export default function RequestsView() {
             <div className="gn-page-head">
                 <div className="gn-page-head-txt">
                     <h1 className="gn-h1">Requests</h1>
-                    <p className="gn-sub" style={{marginTop: 6}}>
-                        {counts.received} waiting for your answer, {counts.sent} sent by you.
+                    <p className="gn-meta" style={{marginTop: 8}}>
+                        <span><b>{counts.received}</b> incoming</span>
+                        <i className="sep" aria-hidden="true"/>
+                        <span><b>{counts.sent}</b> outgoing</span>
+                        <i className="sep" aria-hidden="true"/>
+                        <span><b>{counts.first}</b> established</span>
+                        <i className="sep" aria-hidden="true"/>
+                        <span><b>{meta.queryMs ?? "—"}</b> ms Cypher</span>
                     </p>
                 </div>
             </div>

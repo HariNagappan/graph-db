@@ -22,7 +22,6 @@ export default function UsersTable({
         return users.filter((u) =>
             u.email.toLowerCase().includes(q)
             || u.id.toLowerCase().includes(q)
-            || u.role.toLowerCase().includes(q)
         );
     }, [users, query]);
 
@@ -107,15 +106,13 @@ export default function UsersTable({
                         <tr>
                             <th style={{width: 190}}>id</th>
                             <th>email</th>
-                            <th style={{width: 92}}>role</th>
-                            <th style={{width: 150}}>password_hash</th>
                             <th style={{width: 170}}>created_at</th>
                         </tr>
                     </thead>
                     <tbody>
                         {rows.length === 0 ? (
                             <tr>
-                                <td colSpan={5} className="gn-table-empty">
+                                <td colSpan={3} className="gn-table-empty">
                                     No users match this filter.
                                 </td>
                             </tr>
@@ -123,10 +120,6 @@ export default function UsersTable({
                             <tr key={u.id} className={u.id === selectedNodeId ? "is-linked" : undefined}>
                                 <td className="cell-id" title={u.id}>{u.id}</td>
                                 <td className="cell-strong">{u.email}</td>
-                                <td><span className={`gn-role gn-role-${u.role}`}>{u.role}</span></td>
-                                <td className="cell-muted" style={{fontFamily: "var(--g-mono)", fontSize: 11}}>
-                                    (hidden)
-                                </td>
                                 <td className="cell-num cell-muted">{u.created_at}</td>
                             </tr>
                         ))}

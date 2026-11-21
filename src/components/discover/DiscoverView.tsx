@@ -31,7 +31,7 @@ export default function DiscoverView() {
     const mutualParam = params.get("mutual") === "1";
     const pendingParam = params.get("pending") === "1";
 
-    const {people, loading, error, refresh} = useNetwork();
+    const {people, meta, loading, error, refresh} = useNetwork();
     const [q, setQ] = useState(qParam);
     const [degree, setDegree] = useState<DegreeFilter>(degreeParam);
     const [onlyMutual, setOnlyMutual] = useState(mutualParam);
@@ -121,8 +121,14 @@ export default function DiscoverView() {
             <div className="gn-page-head">
                 <div className="gn-page-head-txt">
                     <h1 className="gn-h1">Discover people</h1>
-                    <p className="gn-sub" style={{marginTop: 6, maxWidth: 620}}>
-                        Search the whole network by name. Distance and mutual connections come from the graph.
+                    <p className="gn-meta" style={{marginTop: 8}}>
+                        <span><b>{people.length}</b> {people.length === 1 ? "node" : "nodes"}</span>
+                        <i className="sep" aria-hidden="true"/>
+                        <span><b>3</b> degrees</span>
+                        <i className="sep" aria-hidden="true"/>
+                        <span>distance + mutuals via Cypher</span>
+                        <i className="sep" aria-hidden="true"/>
+                        <span><b>{meta.queryMs ?? "—"}</b> ms</span>
                     </p>
                 </div>
             </div>

@@ -45,7 +45,7 @@ export default function NetworkView() {
     const router = useRouter();
     const params = useSearchParams();
     const degreeParam = params.get("degree");
-    const {people, buckets, loading, error, refresh} = useNetwork();
+    const {people, buckets, meta, loading, error, refresh} = useNetwork();
 
     const [tab, setTab] = useState<Tab>(() => normalizeTab(degreeParam));
     const [q, setQ] = useState("");
@@ -103,8 +103,14 @@ export default function NetworkView() {
             <div className="gn-page-head">
                 <div className="gn-page-head-txt">
                     <h1 className="gn-h1">My network</h1>
-                    <p className="gn-sub" style={{marginTop: 6}}>
-                        {people.length} {people.length === 1 ? "person" : "people"}. Sort by distance, then by mutual connections.
+                    <p className="gn-meta" style={{marginTop: 8}}>
+                        <span><b>{people.length}</b> {people.length === 1 ? "node" : "nodes"}</span>
+                        <i className="sep" aria-hidden="true"/>
+                        <span><b>{buckets.first.length}</b> direct</span>
+                        <i className="sep" aria-hidden="true"/>
+                        <span><b>{buckets.second.length + buckets.third.length}</b> indirect</span>
+                        <i className="sep" aria-hidden="true"/>
+                        <span><b>{meta.queryMs ?? "—"}</b> ms Cypher</span>
                     </p>
                 </div>
                 <div className="gn-page-head-actions">

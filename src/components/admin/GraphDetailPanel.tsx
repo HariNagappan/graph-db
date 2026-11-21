@@ -19,7 +19,7 @@ export default function GraphDetailPanel({
         return (
             <div className="gn-detail">
                 <div className="gn-detail-b" style={{padding: 14}}>
-                    <div className="gn-flex gn-ic gn-gap-8" style={{color: "var(--g-text-3)"}}>
+                    <div className="gn-flex gn-ic gn-gap-8" style={{color: "var(--text-tertiary)"}}>
                         <Route size={15}/>
                         <span style={{fontSize: 12}}>Select a node</span>
                     </div>

@@ -38,10 +38,10 @@ export default function CreatePasswordPage() {
     const strength = getStrength(password);
     const canContinue = password.length >= 6 && password.length <= 64 && strength >= 2;
     const strengthColor = strength >= 3
-        ? "var(--g-ok)"
+        ? "var(--success)"
         : strength === 2
-            ? "var(--g-violet)"
-            : "var(--g-danger)";
+            ? "var(--accent)"
+            : "var(--error)";
 
     const rules = [
         {label: "6 to 64 characters", ok: password.length >= 6 && password.length <= 64},
