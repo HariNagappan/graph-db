@@ -1,14 +1,16 @@
-'use client';
+"use client";
+
 import React, {useState} from "react";
 import {useAuthStore} from "@/stores/authStore";
 import {useRouter} from "next/navigation";
 import AuthFormWrapper from "@/components/Auth/AuthFormWrapper";
+import {CircleAlert, Loader2} from "lucide-react";
 
 export default function LoginPage() {
     const router = useRouter();
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
-    const {setFormData, resetFormData} = useAuthStore();
+    const {formData: {email: savedEmail}, setFormData, resetFormData} = useAuthStore();
 
     async function credLogin(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
@@ -40,16 +42,48 @@ export default function LoginPage() {
 
     return (
         <AuthFormWrapper>
-            <div className="self-start text-3xl tracking-wide font-semibold">Sign in or create an account</div>
-            <form onSubmit={credLogin} className="w-full mt-8" method="post">
-                <input type="email" required autoComplete="email" name="email" placeholder="Email"
-                       className="placeholder:text-[#222] focus:outline-none focus:ring-2 focus:ring-[#1568e3] w-full border py-3.5 px-4 text-lg tracking-wide border-gray-400 rounded-lg"/>
-                <button type="submit" disabled={loading}
-                        className="w-full cursor-pointer tracking-wider transition-all duration-200 bg-[#5423e7] rounded-full px-9 py-3.5 text-white hover:bg-purple-800 text-lg font-semibold mt-5 disabled:opacity-60">
-                    {loading ? "Please wait..." : "Continue"}
+            <h1 className="gn-auth-title">Sign in or create an account</h1>
+            <p className="gn-auth-sub">
+                Enter your email. We check it against the account table, then take you to the right next step.
+            </p>
+
+            <form onSubmit={credLogin} className="gn-auth-body" method="post">
+                <div className="gn-field">
+                    <label className="gn-label" htmlFor="auth-email">Email</label>
+                    <input
+                        id="auth-email"
+                        name="email"
+                        type="email"
+                        required
+                        autoFocus
+                        autoComplete="email"
+                        placeholder="you@company.com"
+                        defaultValue={savedEmail ?? ""}
+                        className={`gn-input${error ? " is-error" : ""}`}
+                        onChange={() => error && setError("")}
+                    />
+                    {error && <div className="gn-err"><CircleAlert size={14}/>{error}</div>}
+                </div>
+
+                <button
+                    type="submit"
+                    disabled={loading}
+                    className="gn-btn gn-btn-primary gn-btn-lg gn-btn-block"
+                >
+                    {loading ? <><Loader2 size={16} className="gn-spin"/>Checking…</> : "Continue"}
                 </button>
-                {error && <div className="text-red-500 text-sm font-bold mt-2">{error}</div>}
+
+                <div className="gn-auth-demo">
+                    <span className="gn-dim">Demo network</span>
+                    <span className="gn-mono">alice@demo.test</span>
+                    <span className="gn-dim">·</span>
+                    <span className="gn-mono">admin@gmail.com</span>
+                </div>
             </form>
+
+            <p className="gn-auth-foot">
+                By continuing you agree to the terms of use and the privacy notice.
+            </p>
         </AuthFormWrapper>
-    )
+    );
 }
