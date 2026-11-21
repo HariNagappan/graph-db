@@ -707,13 +707,7 @@ body {
 .gn-stack { display: flex; flex-direction: column; gap: 16px; }
 
 /* ---------------------------------------------------------------- boot ---- */
-.gn-boot { min-height: 100dvh; display: grid; place-items: center; background: var(--background); }
-.gn-boot-inner { display: flex; flex-direction: column; align-items: center; gap: 14px; }
-.gn-boot-mark { color: var(--accent); }
-.gn-boot-text { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-tertiary); }
-.gn-boot-line { width: 120px; height: 2px; border-radius: 2px; overflow: hidden; background: var(--surface-tertiary); }
-.gn-boot-line i { display: block; width: 40%; height: 100%; border-radius: 2px; background: var(--accent); animation: gn-boot-slide 1.2s var(--ease) infinite; }
-@keyframes gn-boot-slide { 0% { transform: translateX(-110%); } 100% { transform: translateX(360%); } }
+.gn-boot { min-height: 100dvh; background: var(--background); }
 
 /* --------------------------------------------------------------- orbit ---- */
 .gn-orbit { position: relative; width: 100%; height: 100%; min-height: 280px; }

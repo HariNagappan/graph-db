@@ -1,12 +1,13 @@
 "use client";
 
 import {useRouter} from "next/navigation";
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import {signIn} from "next-auth/react";
 import Link from "next/link";
 import {CircleAlert, Eye, EyeOff, Loader2} from "lucide-react";
 import {useAuthStore} from "@/stores/authStore";
 import AuthFormWrapper from "@/components/Auth/AuthFormWrapper";
+import {EMAIL_INVALID_MESSAGE, isValidEmail} from "@/lib/validation";
 
 export default function CheckPasswordPage() {
     const router = useRouter();
@@ -14,12 +15,22 @@ export default function CheckPasswordPage() {
     const [show, setShow] = useState(false);
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
+    const passwordRef = useRef<HTMLInputElement>(null);
     const {email} = useAuthStore((state) => state.formData);
+    const setEmailError = useAuthStore((state) => state.setEmailError);
 
-    // The email lives in memory only; after a page refresh start again.
+    // The email lives in memory only; after a page refresh start again, and any
+    // address step 1 would reject goes back there rather than being shown here.
     useEffect(() => {
-        if (!email) router.replace("/auth/login");
-    }, [email, router]);
+        if (!email) {
+            router.replace("/auth/login");
+            return;
+        }
+        if (!isValidEmail(email)) {
+            setEmailError(EMAIL_INVALID_MESSAGE);
+            router.replace("/auth/login");
+        }
+    }, [email, router, setEmailError]);
 
     async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
@@ -29,6 +40,9 @@ export default function CheckPasswordPage() {
             const res = await signIn("credentials", {redirect: false, email, password});
             if (!res || res.error) {
                 setError("That password does not match this account.");
+                // Clear the rejected password so the next attempt starts from an empty box.
+                setPassword("");
+                passwordRef.current?.focus();
                 return;
             }
             // Full-page navigation drops the in-memory password.
@@ -56,6 +70,7 @@ export default function CheckPasswordPage() {
                     <div className="gn-pw-wrap">
                         <input
                             id="auth-pw"
+                            ref={passwordRef}
                             type={show ? "text" : "password"}
                             name="password"
                             required

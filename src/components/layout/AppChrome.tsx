@@ -4,21 +4,16 @@ import {useEffect} from "react";
 import {usePathname, useRouter} from "next/navigation";
 import {useSession} from "next-auth/react";
 import AppShell from "@/components/layout/AppShell";
-import BrandMark from "@/components/UI/BrandMark";
 
 /** Routes that render inside the signed-in application shell. */
 const APP_ROUTES = new Set(["/", "/network", "/discover", "/requests", "/connections"]);
 
-function Boot({label}: {label: string}) {
-    return (
-        <div className="gn gn-boot">
-            <div className="gn-boot-inner" role="status" aria-live="polite">
-                <BrandMark size={34} className="gn-boot-mark"/>
-                <div className="gn-boot-line"><i/></div>
-                <div className="gn-boot-text">{label}</div>
-            </div>
-        </div>
-    );
+/**
+ * The gate holds a plain backdrop while the session resolves; the shell paints its
+ * own skeleton right after, so there is no separate splash screen to sit through.
+ */
+function Boot() {
+    return <div className="gn gn-boot" aria-busy="true"/>;
 }
 
 function GuardedApp({children}: {children: React.ReactNode}) {
@@ -37,7 +32,7 @@ function GuardedApp({children}: {children: React.ReactNode}) {
     }, [status, isAdmin, router]);
 
     if (status !== "authenticated" || isAdmin) {
-        return <Boot label={isAdmin ? "Opening the admin console" : "Loading your network"}/>;
+        return <Boot/>;
     }
 
     return <AppShell>{children}</AppShell>;

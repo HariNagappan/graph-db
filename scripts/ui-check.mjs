@@ -122,10 +122,25 @@ try {
     await send("Page.enable");
     await send("Runtime.enable");
     await send("Network.enable");
+    // Without this, headless Chrome never really focuses the page, so blur/focus
+    // handlers cannot fire and inline validation looks broken when it is not.
+    await send("Emulation.setFocusEmulationEnabled", {enabled: true});
     await viewport(1440, 980);
 
     // ---------- chrome: no top search, no sidebar footer, no theme switch ----------
     await login(BASE, "alice@demo.test", "Demo@123", "/");
+    await waitFor("document.querySelector('.gn-stats') !== null");
+
+    // ---------- no boot splash on a cold load ----------
+    await send("Page.navigate", {url: BASE + "/"});
+    await sleep(60);
+    console.log("boot gate:", JSON.stringify(await evaluate(`(() => {
+        const html = document.documentElement.outerHTML;
+        return {
+            splashMarkup: /gn-boot-(line|text|inner|mark)|Loading your network/.test(html),
+            gate: /class="gn gn-boot"/.test(html),
+        };
+    })()`)));
     await waitFor("document.querySelector('.gn-stats') !== null");
     console.log("chrome:", JSON.stringify(await evaluate(`(() => ({
         topSearch: !!document.querySelector('.gn-top form.gn-search'),
@@ -182,8 +197,6 @@ try {
     console.log("after sign-out:", await evaluate("location.href"));
 
     // ---------- email validation belongs to step 1, and only step 1 ----------
-    await send("Page.navigate", {url: `${BASE}/auth/login`});
-    await sleep(1500);
     const setEmailValue = (v) => `(() => {
         const i = document.querySelector('#auth-email');
         const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
@@ -192,6 +205,28 @@ try {
         i.focus(); i.blur();
         return true;
     })()`;
+
+    // (0) a rejected password empties the box
+    await send("Page.navigate", {url: `${BASE}/auth/login`});
+    await sleep(1400);
+    await evaluate(setEmailValue("alice@demo.test"));
+    await evaluate("document.querySelector('form').requestSubmit()");
+    await waitFor("location.pathname === '/auth/check-password'");
+    await sleep(700);
+    await evaluate(`(() => {
+        const i = document.querySelector('#auth-pw');
+        const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
+        set.call(i, 'not-the-password');
+        i.dispatchEvent(new Event('input', {bubbles: true}));
+        document.querySelector('form').requestSubmit();
+        return true;
+    })()`);
+    await sleep(1600);
+    console.log("wrong password:", JSON.stringify(await evaluate("({path: location.pathname, value: document.querySelector('#auth-pw').value, err: document.querySelector('.gn-err')?.innerText ?? null})")));
+    await shot("v3-09-wrong-password");
+
+    await send("Page.navigate", {url: `${BASE}/auth/login`});
+    await sleep(1500);
 
     // (a) the message shows while the field is still being filled in, before Continue
     await evaluate(setEmailValue("bob@test"));
