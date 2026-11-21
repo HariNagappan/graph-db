@@ -9,6 +9,21 @@ Login data goes in a **relational database** (SQLite) and the social graph goes 
 
 ---
 
+## How it works at a glance
+
+![GraphNet data model: the SQLite users table joined by the same UUID to Neo4j User nodes, three rings showing Alice's 1st, 2nd and 3rd degree connections with a pending request from Ivan, and the matching My network screen](diagram.png)
+
+One UUID is the only link between the two stores. Degrees and mutual connections are
+path questions ("how many hops away is this person?"), which is exactly what a graph
+database answers in one traversal — the same question in SQL needs a recursive join per
+degree level, and the query has to be rewritten each time the depth changes. The bottom
+panel is the screen those queries produce: the same three degree colours, the mutual
+count, and the pending request that Ivan's arrow represents.
+
+<sub>Diagram source: [docs/diagram.html](docs/diagram.html) — regenerate `diagram.png` from it if the schema changes.</sub>
+
+---
+
 ## Tech stack
 
 | Layer | Technology |
