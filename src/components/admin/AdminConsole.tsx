@@ -19,7 +19,6 @@ import BrandMark from "@/components/UI/BrandMark";
 import GraphCanvas, {type GraphHandle} from "@/components/admin/GraphCanvas";
 import GraphDetailPanel from "@/components/admin/GraphDetailPanel";
 import UsersTable from "@/components/admin/UsersTable";
-import ThemeToggle from "@/components/theme/ThemeToggle";
 import {EmptyState, ErrorState} from "@/components/UI/States";
 
 type AdminData = {graph: WholeGraph; users: AdminUser[]};
@@ -112,6 +111,12 @@ export default function AdminConsole() {
         setHidden((current) => ({...current, [type]: !current[type]}));
     };
 
+    // Sign out, then hard-navigate to a relative URL so the redirect stays on whatever host serves the app.
+    const handleSignOut = async () => {
+        await signOut({redirect: false});
+        window.location.assign("/auth/login");
+    };
+
     return (
         <div className="gn gn-admin" data-mode="app">
             <aside className="gn-rail" aria-label="Admin navigation">
@@ -150,7 +155,7 @@ export default function AdminConsole() {
                 <button
                     type="button"
                     className="gn-rail-btn"
-                    onClick={() => void signOut({callbackUrl: "/auth/login"})}
+                    onClick={() => void handleSignOut()}
                     aria-label="Sign out"
                 >
                     <LogOut size={17}/>
@@ -234,10 +239,8 @@ export default function AdminConsole() {
                                 >
                                     <Maximize2 size={16}/>
                                 </button>
-                                <span className="gn-top-sep"/>
                             </>
                         )}
-                        <ThemeToggle/>
                     </div>
                 </div>
 

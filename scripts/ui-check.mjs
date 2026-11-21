@@ -3,7 +3,7 @@ import path from "node:path";
 import fs from "node:fs";
 
 const CHROME = "C:/Program Files/Google/Chrome/Application/chrome.exe";
-const PORT = 9233;
+const PORT = 9240;
 const BASE = "http://localhost:3000";
 const PROFILE = path.join(process.env.TEMP ?? ".", `graphnet-ui-${Date.now()}`);
 const OUT = path.join(process.cwd(), "qa-redesign");
@@ -31,7 +31,10 @@ await new Promise((res, rej) => { ws.onopen = res; ws.onerror = rej; });
 let n = 0;
 const pending = new Map();
 const errors = [];
-ws.onmessage = (event) => {
+const netCalls = [];
+let interceptQueryMs = null;
+
+ws.onmessage = async (event) => {
     const m = JSON.parse(event.data);
     if (m.id && pending.has(m.id)) {
         const p = pending.get(m.id);
@@ -39,7 +42,28 @@ ws.onmessage = (event) => {
         m.error ? p.reject(new Error(m.error.message)) : p.resolve(m.result);
         return;
     }
-    if (m.method === "Runtime.exceptionThrown") errors.push(m.params.exceptionDetails.exception?.description ?? m.params.exceptionDetails.text);
+    if (m.method === "Runtime.exceptionThrown") {
+        errors.push(m.params.exceptionDetails.exception?.description ?? m.params.exceptionDetails.text);
+    }
+    if (m.method === "Network.requestWillBeSent" && m.params.request.url.includes("/api/network")) {
+        netCalls.push(m.params.request.url);
+    }
+    if (m.method === "Fetch.requestPaused") {
+        const {requestId} = m.params;
+        try {
+            const {body, base64Encoded} = await send("Fetch.getResponseBody", {requestId});
+            const json = JSON.parse(base64Encoded ? Buffer.from(body, "base64").toString("utf8") : body);
+            json.meta = {...(json.meta ?? {}), queryMs: interceptQueryMs};
+            await send("Fetch.fulfillRequest", {
+                requestId,
+                responseCode: 200,
+                responseHeaders: [{name: "content-type", value: "application/json"}],
+                body: Buffer.from(JSON.stringify(json)).toString("base64"),
+            });
+        } catch {
+            await send("Fetch.continueRequest", {requestId}).catch(() => {});
+        }
+    }
 };
 const send = (method, params = {}) => new Promise((resolve, reject) => {
     const id = ++n;
@@ -60,7 +84,7 @@ const waitFor = async (expr, timeout = 30000) => {
     throw new Error(`timeout ${expr}`);
 };
 async function shot(name) {
-    await sleep(400);
+    await sleep(350);
     const {data} = await send("Page.captureScreenshot", {format: "png"});
     fs.writeFileSync(path.join(OUT, `${name}.png`), Buffer.from(data, "base64"));
 }
@@ -68,10 +92,17 @@ async function viewport(width, height) {
     await send("Emulation.setDeviceMetricsOverride", {width, height, deviceScaleFactor: 1, mobile: width < 800});
     await sleep(250);
 }
-async function login(email, password, expected) {
-    await send("Page.navigate", {url: `${BASE}/auth/login`});
+async function login(base, email, password, expected) {
+    await send("Page.navigate", {url: `${base}/auth/login`});
     await sleep(1200);
-    await evaluate(`(() => { const i=document.querySelector('#auth-email'); i.value=${JSON.stringify(email)}; document.querySelector('form').requestSubmit(); return true; })()`);
+    await evaluate(`(() => {
+        const i = document.querySelector('#auth-email');
+        const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
+        set.call(i, ${JSON.stringify(email)});
+        i.dispatchEvent(new Event('input', {bubbles: true}));
+        document.querySelector('form').requestSubmit();
+        return true;
+    })()`);
     await waitFor("location.pathname === '/auth/check-password'");
     await evaluate(`(() => { const i=document.querySelector('#auth-pw'); const s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set; s.call(i,${JSON.stringify(password)}); i.dispatchEvent(new Event('input',{bubbles:true})); return true; })()`);
     await sleep(200);
@@ -85,105 +116,141 @@ async function go(p, waitExpr) {
     if (waitExpr) await waitFor(waitExpr);
     await sleep(600);
 }
-
-const paneState = `(() => {
-    const main = document.querySelector('.gn-admin-main');
-    const graph = document.querySelector('.gn-graph-area');
-    const table = document.querySelector('.gn-admin-table');
-    const vis = (el) => !!el && getComputedStyle(el).display !== 'none' && el.getBoundingClientRect().height > 0;
-    return {
-        pane: main?.getAttribute('data-pane'),
-        graphVisible: vis(graph),
-        tableVisible: vis(table),
-        title: document.querySelector('.gn-admin-title')?.textContent,
-        activeRail: [...document.querySelectorAll('.gn-rail-btn')].findIndex((b) => b.classList.contains('is-active')),
-        tableRows: document.querySelectorAll('.gn-table tbody tr').length,
-        tableHeight: table ? Math.round(table.getBoundingClientRect().height) : 0,
-    };
-})()`;
+const navTo = (label) => `[...document.querySelectorAll('.gn-nav-item')].find((a) => a.textContent.includes(${JSON.stringify(label)})).click()`;
 
 try {
     await send("Page.enable");
     await send("Runtime.enable");
+    await send("Network.enable");
     await viewport(1440, 980);
 
-    // ---- admin: rail buttons must switch panes ----
-    await login("admin@gmail.com", "admin123", "/admin");
-    await waitFor("document.querySelectorAll('.g-node').length > 0");
-    console.log("A. initial      ", JSON.stringify(await evaluate(paneState)));
-    await shot("admin-01-graph-pane");
+    // ---------- chrome: no top search, no sidebar footer, no theme switch ----------
+    await login(BASE, "alice@demo.test", "Demo@123", "/");
+    await waitFor("document.querySelector('.gn-stats') !== null");
+    console.log("chrome:", JSON.stringify(await evaluate(`(() => ({
+        topSearch: !!document.querySelector('.gn-top form.gn-search'),
+        sidebarFooter: !!document.querySelector('.gn-side-foot'),
+        themeToggle: !!document.querySelector('.gn-theme-toggle'),
+        themeAttr: document.documentElement.getAttribute('data-theme'),
+        colourScheme: getComputedStyle(document.documentElement).colorScheme,
+    }))()`)));
 
-    await evaluate("document.querySelector('[aria-label=\"Users table\"]').click()");
-    await sleep(700);
-    console.log("B. after users  ", JSON.stringify(await evaluate(paneState)));
-    await shot("admin-02-users-pane");
-
-    await evaluate("document.querySelector('[aria-label=\"Graph view\"]').click()");
-    await sleep(700);
-    console.log("C. after graph  ", JSON.stringify(await evaluate(paneState)));
-    await shot("admin-03-graph-again");
-
-    await evaluate("document.querySelector('[aria-label=\"Users table\"]').click()");
-    await sleep(700);
-    const pager = await evaluate(`(() => {
-        const btns = [...document.querySelectorAll('.gn-page-btn')];
-        const two = btns.find((b) => b.textContent.trim() === '2');
-        two?.click();
-        return new Promise((r) => setTimeout(() => r({
-            meta: document.querySelector('.gn-table-meta')?.textContent.trim(),
-            rows: document.querySelectorAll('.gn-table tbody tr').length,
-        }), 400));
-    })()`);
-    console.log("D. users page 2 ", JSON.stringify(pager));
-    await shot("admin-04-users-page2");
-
-    await evaluate("document.querySelector('.gn-theme-toggle').click()");
-    await sleep(600);
-    console.log("E. admin dark   ", JSON.stringify(await evaluate(paneState)), await evaluate("document.documentElement.getAttribute('data-theme')"));
-    await shot("admin-05-users-dark");
-    await evaluate("document.querySelector('.gn-theme-toggle').click()");
-    await sleep(400);
-
-    await viewport(390, 844);
-    await sleep(500);
-    console.log("E2. mobile users", JSON.stringify(await evaluate(paneState)));
-    await shot("admin-06-users-mobile");
-    await evaluate("document.querySelector('[aria-label=\"Graph view\"]').click()");
-    await sleep(700);
-    console.log("E3. mobile graph", JSON.stringify(await evaluate(paneState)));
-    await shot("admin-07-graph-mobile");
-    await viewport(1440, 980);
-    await sleep(400);
-
-    // ---- regular user: pages + metadata ----
-    await send("Network.clearBrowserCookies");
-    await login("alice@demo.test", "Demo@123", "/");
-    const meta = await evaluate("[...document.querySelectorAll('.gn-meta')].map((n) => n.innerText.replace(/\\s+/g, ' '))");
-    console.log("F. dashboard meta", JSON.stringify(meta));
-    await shot("app-01-dashboard-light");
-
+    // ---------- dashboard / network / profile bits that were removed ----------
+    console.log("dashboard degree grid:", await evaluate("!!document.querySelector('.gn-degree-grid')"));
     await go("/network", "document.querySelector('.gn-people') !== null");
-    console.log("G. network meta ", JSON.stringify(await evaluate("[...document.querySelectorAll('.gn-meta')].map((n) => n.innerText.replace(/\\s+/g, ' '))")));
-    await shot("app-02-network-light");
+    console.log("network view toggle:", await evaluate("!!document.querySelector('.gn-viewtoggle')"), "| cards:", await evaluate("document.querySelectorAll('.gn-person').length"));
+    await shot("v3-02-network");
+    const other = await evaluate("fetch('/api/network').then(r=>r.json()).then(d=>d.users.find(u=>u.degree===2)?.id ?? d.users[1].id)");
+    await go(`/connections?user_id=${other}`, "document.querySelector('.gn-profile-hero') !== null");
+    console.log("profile position card:", await evaluate("[...document.querySelectorAll('.gn-card-title')].some((t) => t.textContent.toLowerCase().includes('network position'))"),
+        "| note:", await evaluate("!!document.querySelector('.gn-profile-note')"));
+    await shot("v3-03-profile");
 
-    await go("/discover", "document.querySelector('.gn-search-card') !== null");
-    console.log("H. discover meta", JSON.stringify(await evaluate("[...document.querySelectorAll('.gn-meta')].map((n) => n.innerText.replace(/\\s+/g, ' '))")));
-    await shot("app-03-discover-light");
-
-    await go("/requests", "document.querySelector('.gn-2col-requests') !== null");
-    console.log("I. requests meta", JSON.stringify(await evaluate("[...document.querySelectorAll('.gn-meta')].map((n) => n.innerText.replace(/\\s+/g, ' '))")));
-    await shot("app-04-requests-light");
-
-    await evaluate("document.querySelector('.gn-theme-toggle').click()");
-    await sleep(600);
-    console.log("J. theme       ", await evaluate("document.documentElement.getAttribute('data-theme')"));
-    await shot("app-05-requests-dark");
+    // ---------- nav refresh: a real API call per navigation, no hard reload ----------
     await go("/", "document.querySelector('.gn-stats') !== null");
-    await shot("app-06-dashboard-dark");
+    await evaluate("window.__marker = 'alive'");
+    netCalls.length = 0;
+    await evaluate(navTo("Requests"));
+    await waitFor("location.pathname === '/requests'");
+    await sleep(1400);
+    console.log("nav 1:", JSON.stringify({path: await evaluate("location.pathname"), spa: await evaluate("window.__marker ?? 'RELOADED'"), apiCalls: netCalls.length}));
 
+    netCalls.length = 0;
+    await evaluate(navTo("Requests"));
+    await sleep(1400);
+    console.log("nav 2 (same tab):", JSON.stringify({apiCalls: netCalls.length, spa: await evaluate("window.__marker ?? 'RELOADED'")}));
+
+    // ---------- fresh data really reaches the page ----------
+    await send("Fetch.enable", {patterns: [{urlPattern: "*api/network*", requestStage: "Response"}]});
+    interceptQueryMs = 777;
+    await evaluate(navTo("Overview"));
+    await waitFor("location.pathname === '/'");
+    await sleep(1600);
+    const meta = await evaluate("document.querySelector('.gn-meta')?.innerText.replace(/\\s+/g, ' ')");
+    console.log("intercepted meta:", JSON.stringify(meta));
+    await send("Fetch.disable");
+    interceptQueryMs = null;
+    await shot("v3-01-dashboard");
+
+    // ---------- sign out stays on the serving host ----------
+    await send("Network.clearBrowserCookies");
+    await login("http://127.0.0.1:3000", "alice@demo.test", "Demo@123", "/");
+    await evaluate("document.querySelector('.gn-userbtn').click()");
+    await sleep(400);
+    await evaluate(`[...document.querySelectorAll('.gn-menu-item')].find((b) => b.textContent.includes('Sign out')).click()`);
+    await sleep(2500);
+    console.log("after sign-out:", await evaluate("location.href"));
+
+    // ---------- email validation belongs to step 1, and only step 1 ----------
+    await send("Page.navigate", {url: `${BASE}/auth/login`});
+    await sleep(1500);
+    const setEmailValue = (v) => `(() => {
+        const i = document.querySelector('#auth-email');
+        const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
+        set.call(i, ${JSON.stringify(v)});
+        i.dispatchEvent(new Event('input', {bubbles: true}));
+        i.focus(); i.blur();
+        return true;
+    })()`;
+
+    // (a) the message shows while the field is still being filled in, before Continue
+    await evaluate(setEmailValue("bob@test"));
+    await sleep(500);
+    console.log("step1 inline error:", JSON.stringify(await evaluate("({path: location.pathname, err: document.querySelector('.gn-err')?.innerText ?? null})")));
+    await shot("v3-06-invalid-email");
+
+    // (b) Continue stays on step 1
+    await evaluate("document.querySelector('form').requestSubmit()");
+    await sleep(900);
+    console.log("step1 submit blocked:", JSON.stringify(await evaluate("({path: location.pathname, ariaInvalid: document.querySelector('#auth-email').getAttribute('aria-invalid')})")));
+
+    // (c) the API names the field that failed, so a later step can route it back
+    console.log("api field tag:", JSON.stringify(await evaluate(`fetch('/api/auth/register', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({email: 'bob@test', name: 'Bob Test', password: 'Demo@123'})}).then(async (r) => ({status: r.status, ...(await r.json())}))`)));
+
+    // (d) step 3 cannot be opened without step 1
+    await send("Page.navigate", {url: `${BASE}/auth/register`});
+    await sleep(1300);
+    console.log("step3 without step1:", await evaluate("location.pathname"));
+
+    // (e) a real sign-up reaches step 3, where only name errors are reported
+    const fresh = `qa-step-${Date.now()}@demo.test`;
+    await evaluate(setEmailValue(fresh));
+    await evaluate("document.querySelector('form').requestSubmit()");
+    await waitFor("location.pathname === '/auth/create-password'");
+    await sleep(700);
+    await evaluate(`(() => {
+        const i = document.querySelector('#auth-new');
+        const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
+        set.call(i, 'Demo@123');
+        i.dispatchEvent(new Event('input', {bubbles: true}));
+        return true;
+    })()`);
+    await sleep(250);
+    await evaluate("document.querySelector('form').requestSubmit()");
+    await waitFor("location.pathname === '/auth/register'");
+    await sleep(900);
+    await evaluate(`(() => {
+        const i = document.querySelector('#auth-name');
+        const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
+        set.call(i, 'ab');
+        i.dispatchEvent(new Event('input', {bubbles: true}));
+        document.querySelector('form').requestSubmit();
+        return true;
+    })()`);
+    await sleep(700);
+    console.log("step3 name error:", JSON.stringify(await evaluate(`({
+        path: location.pathname,
+        heading: document.querySelector('.gn-auth-title')?.innerText ?? null,
+        err: document.querySelector('.gn-err')?.innerText ?? null,
+        mentionsEmail: document.body.innerText.includes('valid email address'),
+    })`)));
+    await shot("v3-08-step3-name-only");
+
+    // ---------- mobile ----------
     await viewport(390, 844);
-    await go("/", "document.querySelector('.gn-stats') !== null");
-    await shot("app-07-dashboard-mobile");
+    await send("Page.navigate", {url: `${BASE}/auth/login`});
+    await sleep(1500);
+    await shot("v3-07-login-mobile");
 
     console.log("errors", JSON.stringify(errors));
 } finally {

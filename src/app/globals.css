@@ -2,8 +2,8 @@
 
 /* ==========================================================================
    GraphNet design system
-   Light is the default. Every colour, surface, border and text tone below is a
-   semantic token; components never need to know which theme is active.
+   One light theme. Every colour, surface, border and text tone below is a
+   semantic token; components never need to know the palette.
    ========================================================================== */
 
 :root {
@@ -22,7 +22,7 @@
   --border: #d9d4c7;
   --border-strong: #bfb8a7;
 
-  /* Monochrome accent: ink on paper in light, the inverse in dark. */
+  /* Monochrome accent: ink on paper. */
   --accent: #1f1f21;
   --accent-hover: #000000;
   --accent-soft: #eae6dc;
@@ -95,82 +95,6 @@
   --ease: cubic-bezier(0.22, 0.7, 0.24, 1);
   --fast: 140ms var(--ease);
   --med: 220ms var(--ease);
-}
-
-html[data-theme="dark"] {
-  color-scheme: dark;
-
-  --background: #101113;
-  --background-subtle: #0b0c0e;
-  --surface: #17181b;
-  --surface-secondary: #1c1d21;
-  --surface-tertiary: #23252a;
-
-  --text-primary: #f0efec;
-  --text-secondary: #a8a8a4;
-  --text-tertiary: #8b8c93;
-
-  --border: rgba(255, 255, 255, 0.11);
-  --border-strong: rgba(255, 255, 255, 0.18);
-
-  --accent: #f1f0ec;
-  --accent-hover: #ffffff;
-  --accent-soft: rgba(241, 240, 236, 0.12);
-  --on-accent: #141416;
-
-  --degree-1: #5fd3a6;
-  --degree-2: #e2b25f;
-  --degree-3: #9db0cc;
-
-  --success: #6fdaa1;
-  --success-soft: rgba(111, 218, 161, 0.11);
-  --warning: #e0b25a;
-  --warning-soft: rgba(224, 178, 90, 0.1);
-  --error: #ff8088;
-  --error-soft: rgba(255, 128, 136, 0.1);
-
-  --nav-bg: #141518;
-  --overlay: rgba(5, 5, 7, 0.66);
-  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.45), 0 1px 1px rgba(0, 0, 0, 0.3);
-  --shadow-pop: 0 20px 44px -18px rgba(0, 0, 0, 0.8);
-  --hairline: inset 0 1px 0 rgba(255, 255, 255, 0.035);
-
-  --graph-bg: #0e0f12;
-  --graph-grid: rgba(255, 255, 255, 0.055);
-  --graph-node-fill: #191b20;
-  --graph-node-stroke: #5f6359;
-  --graph-edge: rgba(240, 239, 236, 0.24);
-  --graph-edge-request: rgba(226, 178, 95, 0.45);
-  --graph-label: #dedde3;
-  --graph-label-2: #8d8e96;
-  --graph-selected-fill: #1b2f27;
-  --graph-selected-stroke: #5fd3a6;
-  --graph-dim: rgba(255, 255, 255, 0.1);
-  --graph-glow: rgba(95, 211, 166, 0.3);
-
-  --orbit-ring: rgba(255, 255, 255, 0.12);
-  --orbit-ring-1: rgba(95, 211, 166, 0.26);
-  --orbit-spoke: rgba(240, 239, 236, 0.24);
-
-  --auth-art-bg: #121218;
-  --auth-art-line: rgba(255, 255, 255, 0.045);
-  --auth-node-fill: #17181b;
-  --auth-ring-1: rgba(95, 211, 166, 0.3);
-  --auth-ring-2: rgba(226, 178, 95, 0.24);
-  --auth-ring-3: rgba(157, 176, 204, 0.22);
-  --auth-tie-1: rgba(226, 178, 95, 0.2);
-  --auth-tie-2: rgba(157, 176, 204, 0.18);
-  --auth-spoke: rgba(240, 239, 236, 0.2);
-  --auth-core: #f1f0ec;
-
-  --t0-bg: #16332a; --t0-fg: #8fdcc0;
-  --t1-bg: #232a38; --t1-fg: #b9c6e0;
-  --t2-bg: #33290f; --t2-fg: #e8c88a;
-  --t3-bg: #2a2925; --t3-fg: #cfcabb;
-  --t4-bg: #33231d; --t4-fg: #e6bda9;
-  --t5-bg: #262d1d; --t5-fg: #c4d4a4;
-  --t6-bg: #2f281b; --t6-fg: #ddc79c;
-  --t7-bg: #232833; --t7-fg: #bcc7dd;
 }
 
 html,
@@ -292,8 +216,7 @@ body {
 .gn-side {
   width: 232px; flex: 0 0 232px;
   display: flex; flex-direction: column;
-  /* 60px of safe area at the bottom clears the Next.js dev badge over the footer. */
-  padding: 16px 10px 60px;
+  padding: 16px 10px 16px;
   border-right: 1px solid var(--border);
   background: var(--nav-bg);
 }
@@ -389,19 +312,6 @@ body {
 }
 .gn-iconbtn:hover { background: var(--surface-tertiary); color: var(--text-primary); }
 .gn-iconbtn.is-active { background: var(--accent-soft); color: var(--accent); }
-
-/* theme toggle: CSS chooses the icon, so it is correct before hydration */
-.gn-theme-toggle { position: relative; }
-.gn-theme-toggle .theme-moon, .gn-theme-toggle .theme-sun {
-  position: absolute; inset: 0; margin: auto;
-  transition: opacity 180ms var(--ease), transform 180ms var(--ease);
-}
-.gn-theme-toggle .theme-moon { opacity: 1; }
-.gn-theme-toggle .theme-sun { opacity: 0; }
-html[data-theme="light"] .gn-theme-toggle .theme-moon { opacity: 1; transform: rotate(0) scale(1); }
-html[data-theme="light"] .gn-theme-toggle .theme-sun { opacity: 0; transform: rotate(-35deg) scale(.72); }
-html[data-theme="dark"] .gn-theme-toggle .theme-moon { opacity: 0; transform: rotate(35deg) scale(.72); }
-html[data-theme="dark"] .gn-theme-toggle .theme-sun { opacity: 1; transform: rotate(0) scale(1); }
 
 .gn-userbtn {
   display: flex; align-items: center; gap: 8px;
@@ -1030,7 +940,6 @@ html[data-theme="dark"] .gn-theme-toggle .theme-sun { opacity: 1; transform: rot
 .gn-auth-panel { display: flex; align-items: center; justify-content: center; min-height: 100dvh; padding: 38px; background: var(--surface); }
 .gn-auth-form { width: 100%; max-width: 336px; }
 .gn-auth-brand-mobile { display: none; margin-bottom: 30px; }
-.gn-auth-theme { position: fixed; top: 18px; right: 20px; z-index: 30; background: var(--surface); border: 1px solid var(--border); }
 .gn-auth-step { display: flex; align-items: center; gap: 6px; margin-bottom: 14px; }
 .gn-auth-step i { width: 22px; height: 2px; border-radius: 2px; background: var(--surface-tertiary); }
 .gn-auth-step i.on { background: var(--accent); }
@@ -1096,7 +1005,6 @@ html[data-theme="dark"] .gn-theme-toggle .theme-sun { opacity: 1; transform: rot
   .gn-auth-art { display: none; }
   .gn-auth-panel { padding: 30px 20px; }
   .gn-auth-brand-mobile { display: flex; }
-  .gn-auth-theme { top: 14px; right: 14px; }
   .gn-admin { flex-direction: column; }
   .gn-rail {
     flex-direction: row; width: 100%; height: 50px; flex-grow: 0; flex-shrink: 0; flex-basis: 50px;

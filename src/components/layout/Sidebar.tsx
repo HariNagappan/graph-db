@@ -15,7 +15,7 @@ const NAV = [
 
 export default function Sidebar({open, onClose}: {open: boolean; onClose: () => void}) {
     const pathname = usePathname();
-    const {counts} = useNetwork();
+    const {counts, refresh} = useNetwork();
 
     return (
         <aside className={`gn-side${open ? " is-open" : ""}`} id="gn-side" aria-label="Primary navigation">
@@ -47,6 +47,10 @@ export default function Sidebar({open, onClose}: {open: boolean; onClose: () => 
                             href={item.href}
                             className={`gn-nav-item${active ? " is-active" : ""}`}
                             aria-current={active ? "page" : undefined}
+                            onClick={() => {
+                                // Clicking the tab you are already on still re-reads the graph.
+                                if (pathname === item.href) void refresh();
+                            }}
                         >
                             <span className="gn-nav-ico"><Icon size={17}/></span>
                             {item.label}
@@ -55,19 +59,6 @@ export default function Sidebar({open, onClose}: {open: boolean; onClose: () => 
                     );
                 })}
             </nav>
-
-            <div className="gn-side-foot">
-                <div className="gn-side-card">
-                    <div className="gn-eyebrow">Your graph</div>
-                    <div className="gn-side-card-v">
-                        {counts.inside}
-                        <span className="u">inside 3 steps</span>
-                    </div>
-                    <div className="gn-tiny gn-dim" style={{marginTop: 4}}>
-                        {counts.first} direct · {counts.second + counts.third} indirect
-                    </div>
-                </div>
-            </div>
         </aside>
     );
 }

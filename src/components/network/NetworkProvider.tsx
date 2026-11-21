@@ -10,6 +10,7 @@ import {
     useState,
 } from "react";
 import {useSession} from "next-auth/react";
+import {usePathname} from "next/navigation";
 import type {ActionResult, ConnectionAction, Person} from "@/components/people/types";
 import {byDegree, type DegreeBuckets} from "@/components/people/helpers";
 
@@ -57,6 +58,7 @@ const EMPTY_BUCKETS: DegreeBuckets = {all: [], first: [], second: [], third: []}
 
 export function NetworkProvider({children}: {children: React.ReactNode}) {
     const {data: session} = useSession();
+    const pathname = usePathname();
     const [people, setPeople] = useState<Person[] | null>(null);
     const [meta, setMeta] = useState<{queryMs: number | null}>({queryMs: null});
     const [loading, setLoading] = useState(true);
@@ -91,9 +93,14 @@ export function NetworkProvider({children}: {children: React.ReactNode}) {
         }
     }, []);
 
+    // Every navigation re-reads the graph, so a tab never shows data from a previous visit.
+    // The first paint shows the loading state; later visits refresh in the background.
+    const firstPath = useRef(true);
     useEffect(() => {
-        void load();
-    }, [load]);
+        const isFirst = firstPath.current;
+        firstPath.current = false;
+        void load(!isFirst);
+    }, [pathname, load]);
 
     const refresh = useCallback(async () => {
         await load(true);

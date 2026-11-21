@@ -225,7 +225,7 @@ To sign in later, enter the same email. Because it already exists, you'll go str
 - **Degrees:** people are grouped into 1st, 2nd and 3rd degree, with a count of mutual connections.
 - **Profile:** click a name to see your mutual connections with that person. Their full
   connection list is shown only if they are your 1st-degree connection.
-- **Search:** find people by name using the search bar.
+- **Search:** find people by name on the **Discover** page.
 - **My connections:** in the profile menu, shows your own connection list.
 
 See [Login details](#login-details) for accounts to try this with.

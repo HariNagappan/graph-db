@@ -7,29 +7,53 @@ import {CircleAlert, GitBranch, Loader2} from "lucide-react";
 import AuthFormWrapper from "@/components/Auth/AuthFormWrapper";
 import {useAuthStore} from "@/stores/authStore";
 import {AvatarRing} from "@/components/UI/Avatar";
+import {EMAIL_INVALID_MESSAGE, isValidEmail} from "@/lib/validation";
+
+const NAME_LENGTH_MESSAGE = "Name must be 3-60 characters long";
 
 export default function RegisterPage() {
     const router = useRouter();
-    const [name, setName] = useState("");
-    const [error, setError] = useState("");
-    const [loading, setLoading] = useState(false);
     const {email, password} = useAuthStore((state) => state.formData);
+    const setEmailError = useAuthStore((state) => state.setEmailError);
+    const [name, setName] = useState("");
+    // Kept apart on purpose: a name problem belongs under the name field, anything
+    // about the account as a whole belongs at the bottom of the form.
+    const [nameError, setNameError] = useState("");
+    const [formError, setFormError] = useState("");
+    const [loading, setLoading] = useState(false);
 
+    // An address that step 1 would reject must never be carried this far.
     useEffect(() => {
-        if (!email || !password) router.replace("/auth/login");
-    }, [email, password, router]);
+        if (!email || !password) {
+            router.replace("/auth/login");
+            return;
+        }
+        if (!isValidEmail(email)) {
+            setEmailError(EMAIL_INVALID_MESSAGE);
+            router.replace("/auth/login");
+        }
+    }, [email, password, router, setEmailError]);
 
     async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
-        const trimmed = name.trim();
+        const raw = new FormData(e.currentTarget).get("name");
+        const trimmed = (typeof raw === "string" ? raw : name).trim();
+        setNameError("");
+        setFormError("");
 
         if (trimmed.length < 3 || trimmed.length > 60) {
-            setError("Name must be 3-60 characters long");
+            setNameError(NAME_LENGTH_MESSAGE);
+            return;
+        }
+
+        // Last line of defence: report a bad address on step 1, never here.
+        if (!isValidEmail(email ?? "")) {
+            setEmailError(EMAIL_INVALID_MESSAGE);
+            router.replace("/auth/login");
             return;
         }
 
         setLoading(true);
-        setError("");
         try {
             const res = await fetch("/api/auth/register", {
                 method: "POST",
@@ -37,20 +61,30 @@ export default function RegisterPage() {
                 body: JSON.stringify({email, name: trimmed, password}),
             });
             if (!res.ok) {
-                const data = await res.json().catch(() => ({}));
-                setError(data.error ?? "Could not create account");
+                const data = await res.json().catch(() => ({} as {error?: string; field?: string}));
+                if (data.field === "email") {
+                    // Send it back to the step that owns the email field.
+                    setEmailError(data.error ?? EMAIL_INVALID_MESSAGE);
+                    router.replace("/auth/login");
+                    return;
+                }
+                if (data.field === "name") {
+                    setNameError(data.error ?? NAME_LENGTH_MESSAGE);
+                    return;
+                }
+                setFormError(data.error ?? "Could not create account");
                 return;
             }
 
             const response = await signIn("credentials", {redirect: false, email, password});
             if (!response || response.error) {
-                setError("Account created, but sign in failed. Please sign in again.");
+                setFormError("Account created, but sign in failed. Please sign in again.");
                 return;
             }
             // Full-page navigation so the in-memory password is dropped.
             window.location.replace("/");
         } catch {
-            setError("Something went wrong. Please try again.");
+            setFormError("Something went wrong. Please try again.");
         } finally {
             setLoading(false);
         }
@@ -75,15 +109,21 @@ export default function RegisterPage() {
                         autoComplete="name"
                         maxLength={60}
                         placeholder="Jordan Mbeki"
-                        className={`gn-input${error ? " is-error" : ""}`}
+                        className={`gn-input${nameError ? " is-error" : ""}`}
                         value={name}
+                        aria-invalid={!!nameError}
+                        aria-describedby={nameError ? "auth-name-error" : undefined}
                         onChange={(e) => {
                             setName(e.target.value);
-                            if (error) setError("");
+                            if (nameError) setNameError("");
                         }}
                     />
                     <span className="gn-hint">Between 3 and 60 characters. Spaces are allowed between names.</span>
-                    {error && <div className="gn-err"><CircleAlert size={14}/>{error}</div>}
+                    {nameError && (
+                        <div className="gn-err" id="auth-name-error" role="alert">
+                            <CircleAlert size={14}/>{nameError}
+                        </div>
+                    )}
                 </div>
 
                 <div className="gn-auth-preview">
@@ -101,6 +141,12 @@ export default function RegisterPage() {
                     </div>
                     <GitBranch size={15} className="gn-dim" style={{marginLeft: "auto"}}/>
                 </div>
+
+                {formError && (
+                    <div className="gn-err" role="alert">
+                        <CircleAlert size={14}/>{formError}
+                    </div>
+                )}
 
                 <button
                     type="submit"

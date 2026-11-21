@@ -100,7 +100,6 @@ export default function ProfileView() {
     const {person, mutual, connections} = profile;
     const isSelf = person.status === "self";
     const canSee = connections !== null;
-    const degree = person.status === "connected" ? 1 : person.degree;
     const connectionsValue = canSee ? String(connections.length) : "—";
     const connectionLabel = canSee ? "connections" : "connections hidden";
     const secondValue = isSelf ? counts.second + counts.third : person.mutual;
@@ -149,14 +148,9 @@ export default function ProfileView() {
                         </div>
                     </div>
                 </div>
-                <div className="gn-profile-note">
-                    {isSelf
-                        ? "Your degree colours, mutuals and connection lists are computed per pair in Neo4j."
-                        : "GraphNet shows a full connection list only for you and your 1st degree connections."}
-                </div>
             </div>
 
-            <div className="gn-2col" style={{marginTop: 14}}>
+            <div className={isSelf ? undefined : "gn-2col"} style={{marginTop: 14}}>
                 <div className="gn-stack">
                     <section className="gn-card">
                         <div className="gn-card-h">
@@ -183,8 +177,8 @@ export default function ProfileView() {
                     </section>
                 </div>
 
-                <div className="gn-stack">
-                    {!isSelf && (
+                {!isSelf && (
+                    <div className="gn-stack">
                         <section className="gn-card">
                             <div className="gn-card-h">
                                 <span className="gn-card-title">Mutual connections</span>
@@ -200,30 +194,8 @@ export default function ProfileView() {
                                 />
                             )}
                         </section>
-                    )}
-
-                    <section className="gn-card">
-                        <div className="gn-card-h">
-                            <span className="gn-card-title">Your network position</span>
-                        </div>
-                        <div className="gn-card-b">
-                            <dl style={{margin: 0}}>
-                                <div className="gn-kv"><dt>1st degree</dt><dd>{counts.first}</dd></div>
-                                <div className="gn-kv"><dt>2nd degree</dt><dd>{counts.second}</dd></div>
-                                <div className="gn-kv"><dt>3rd degree</dt><dd>{counts.third}</dd></div>
-                                {!isSelf && (
-                                    <div className="gn-kv">
-                                        <dt>Distance to {firstName(person.name)}</dt>
-                                        <dd>{degree === null ? "not connected" : `${degree} ${degree === 1 ? "hop" : "hops"}`}</dd>
-                                    </div>
-                                )}
-                            </dl>
-                            <p className="gn-help-note">
-                                Degrees are computed per pair in Neo4j, so they change the moment a connection is accepted.
-                            </p>
-                        </div>
-                    </section>
-                </div>
+                    </div>
+                )}
             </div>
         </div>
     );

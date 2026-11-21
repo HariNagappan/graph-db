@@ -31,6 +31,12 @@ export default function UserMenu() {
     const name = session.user.name ?? "Member";
     const href = `/connections?user_id=${encodeURIComponent(session.user.id)}`;
 
+    // Sign out, then hard-navigate to a relative URL so the redirect stays on whatever host serves the app.
+    const handleSignOut = async () => {
+        await signOut({redirect: false});
+        window.location.assign("/auth/login");
+    };
+
     return (
         <div className="relative" ref={ref}>
             <button
@@ -64,7 +70,7 @@ export default function UserMenu() {
                         type="button"
                         className="gn-menu-item"
                         role="menuitem"
-                        onClick={() => void signOut({callbackUrl: "/auth/login"})}
+                        onClick={() => void handleSignOut()}
                     >
                         <LogOut size={15}/>Sign out
                     </button>

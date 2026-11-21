@@ -3,7 +3,6 @@ import {Geist, Geist_Mono} from "next/font/google";
 import "./globals.css";
 import Provider from "@/components/SessionProvider";
 import AppChrome from "@/components/layout/AppChrome";
-import {ThemeProvider} from "@/components/theme/ThemeProvider";
 
 const geistSans = Geist({
     variable: "--font-geist-sans",
@@ -29,20 +28,11 @@ export default function RootLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <html lang="en" suppressHydrationWarning>
-            <head>
-                <script
-                    dangerouslySetInnerHTML={{
-                        __html: `(function(){try{var t=localStorage.getItem("graphnet-theme");document.documentElement.setAttribute("data-theme",t==="dark"?"dark":"light");}catch(e){document.documentElement.setAttribute("data-theme","light");}})();`,
-                    }}
-                />
-            </head>
+        <html lang="en">
             <body className={`${geistSans.variable} ${geistMono.variable} gn`}>
-                <ThemeProvider>
-                    <Provider>
-                        <AppChrome>{children}</AppChrome>
-                    </Provider>
-                </ThemeProvider>
+                <Provider>
+                    <AppChrome>{children}</AppChrome>
+                </Provider>
             </body>
         </html>
     );

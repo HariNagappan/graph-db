@@ -2,13 +2,12 @@
 
 import {useDeferredValue, useEffect, useMemo, useState} from "react";
 import {useRouter, useSearchParams} from "next/navigation";
-import {Clock, GitBranch, LayoutGrid, List, Search, Users} from "lucide-react";
+import {Clock, GitBranch, Search, Users} from "lucide-react";
 import {useNetwork} from "@/components/network/NetworkProvider";
 import type {Person} from "@/components/people/types";
 import type {PeopleSort} from "@/components/people/helpers";
 import {displayDegree, sortPeople} from "@/components/people/helpers";
 import PersonCard from "@/components/people/PersonCard";
-import PersonRow from "@/components/people/PersonRow";
 import {EmptyState, ErrorState, PageLoading} from "@/components/UI/States";
 
 type Tab = "all" | "first" | "second" | "third";
@@ -53,7 +52,6 @@ export default function NetworkView() {
     const [onlyMutual, setOnlyMutual] = useState(false);
     const [pendingOnly, setPendingOnly] = useState(false);
     const [sort, setSort] = useState<PeopleSort>("distance");
-    const [view, setView] = useState<"grid" | "list">("grid");
 
     useEffect(() => {
         setTab(normalizeTab(degreeParam));
@@ -124,26 +122,6 @@ export default function NetworkView() {
                         <option value="mutual">Most mutual connections</option>
                         <option value="name">Name A to Z</option>
                     </select>
-                    <div className="gn-viewtoggle" role="group" aria-label="View style">
-                        <button
-                            type="button"
-                            className={`gn-iconbtn${view === "grid" ? " is-active" : ""}`}
-                            onClick={() => setView("grid")}
-                            aria-label="Grid view"
-                            aria-pressed={view === "grid"}
-                        >
-                            <LayoutGrid size={14}/>
-                        </button>
-                        <button
-                            type="button"
-                            className={`gn-iconbtn${view === "list" ? " is-active" : ""}`}
-                            onClick={() => setView("list")}
-                            aria-label="List view"
-                            aria-pressed={view === "list"}
-                        >
-                            <List size={14}/>
-                        </button>
-                    </div>
                 </div>
             </div>
 
@@ -218,13 +196,9 @@ export default function NetworkView() {
                         }
                     />
                 </div>
-            ) : view === "grid" ? (
+            ) : (
                 <div className="gn-people">
                     {list.map((p) => <PersonCard key={p.id} person={p}/>)}
-                </div>
-            ) : (
-                <div className="gn-card gn-list-card">
-                    {list.map((p) => <PersonRow key={p.id} person={p}/>)}
                 </div>
             )}
         </div>

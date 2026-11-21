@@ -1,7 +1,6 @@
 import Link from "next/link";
 import BrandMark from "@/components/UI/BrandMark";
 import Constellation from "@/components/Auth/Constellation";
-import ThemeToggle from "@/components/theme/ThemeToggle";
 
 export default function AuthFormWrapper({
     children,
@@ -12,7 +11,6 @@ export default function AuthFormWrapper({
 }) {
     return (
         <div className="gn gn-auth" data-mode="app">
-            <ThemeToggle className="gn-auth-theme"/>
             <div className="gn-auth-art">
                 <Link href="/" className="gn-auth-brand" style={{padding: 0}}>
                     <BrandMark size={28}/>

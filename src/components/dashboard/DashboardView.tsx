@@ -3,17 +3,15 @@
 import {useEffect, useState} from "react";
 import {Compass, Inbox} from "lucide-react";
 import {useNetwork} from "@/components/network/NetworkProvider";
-import type {PeopleSort} from "@/components/people/helpers";
-import {firstName, sortPeople, suggestedPeople} from "@/components/people/helpers";
+import {firstName, suggestedPeople} from "@/components/people/helpers";
 import OrbitMap from "@/components/dashboard/OrbitMap";
 import PersonRow from "@/components/people/PersonRow";
-import MiniPersonRow from "@/components/people/MiniPersonRow";
 import {EmptyState, ErrorState, PageLoading} from "@/components/UI/States";
 
 const RING_CAP = 30;
 
 export default function DashboardView() {
-    const {me, people, buckets, counts, meta, loading, error, refresh} = useNetwork();
+    const {me, people, counts, meta, loading, error, refresh} = useNetwork();
     const [greeting, setGreeting] = useState("Welcome back");
 
     useEffect(() => {
@@ -33,30 +31,6 @@ export default function DashboardView() {
     const hello = me?.name ? `${greeting}, ${firstName(me.name)}` : greeting;
     const capped =
         counts.first > RING_CAP || counts.second > RING_CAP || counts.third > RING_CAP;
-
-    const sections: {key: string; title: string; hint: string; tone: string; sort: PeopleSort}[] = [
-        {
-            key: "first",
-            title: "1st degree",
-            hint: "People you know directly",
-            tone: "k1",
-            sort: "name",
-        },
-        {
-            key: "second",
-            title: "2nd degree",
-            hint: "One step beyond your connections",
-            tone: "k2",
-            sort: "mutual",
-        },
-        {
-            key: "third",
-            title: "3rd degree",
-            hint: "Two steps beyond your connections",
-            tone: "k3",
-            sort: "mutual",
-        },
-    ];
 
     const stats = [
         {value: counts.first, label: "1st degree", tone: "k1"},
@@ -178,40 +152,6 @@ export default function DashboardView() {
                     />
                 </div>
             )}
-
-            <div className="gn-section-head">
-                <h2 className="gn-h2">Your network by degree</h2>
-                <span className="gn-hint-inline">Every distance, computed per person in Neo4j</span>
-            </div>
-
-            <div className="gn-degree-grid">
-                {sections.map((section) => {
-                    const list = buckets[section.key as "first" | "second" | "third"];
-                    const top = sortPeople(list, section.sort).slice(0, 3);
-                    return (
-                        <section className="gn-card gn-degree-card" key={section.key}>
-                            <div className="gn-card-h">
-                                <span className={`gn-stat-k ${section.tone}`}/>
-                                <span className="gn-card-title">{section.title}</span>
-                                <span className="gn-card-meta">{list.length}</span>
-                            </div>
-                            <div>
-                                {top.length > 0 ? top.map((p) => (
-                                    <MiniPersonRow key={p.id} person={p}/>
-                                )) : (
-                                    <div className="gn-empty" style={{padding: "24px 16px"}}>
-                                        <div className="gn-empty-t">Nobody in this band</div>
-                                        <div className="gn-empty-d">Connect with more people and this fills up.</div>
-                                    </div>
-                                )}
-                            </div>
-                            <div className="gn-card-f">
-                                <span className="gn-tiny gn-dim">{section.hint}</span>
-                            </div>
-                        </section>
-                    );
-                })}
-            </div>
         </div>
     );
 }
